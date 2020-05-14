@@ -29,7 +29,7 @@ func defaultEndTime() time.Time {
 }
 
 
-func queryUplodadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
+func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var err error
 		var startTimeEpoch, endTimeEpoch int64
@@ -76,7 +76,7 @@ func main() {
 	svc := cloudwatchlogs.New(sess)
 
 	router := gin.Default()
-	router.GET("api/open_xml", queryUplodadedOpenXmls(svc))
+	router.GET("api/open_xml", queryUploadedOpenXmls(svc))
 
 	err := router.Run()
 	if err != nil {
