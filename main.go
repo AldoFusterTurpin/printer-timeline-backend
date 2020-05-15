@@ -51,9 +51,8 @@ func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 		if err != nil {
 			return
 		}
-		fmt.Println(queryResultsOutput)
 
-		c.JSON(http.StatusOK, gin.H{"result": queryResultsOutput})
+		c.JSON(http.StatusOK, queryResultsOutput)
 	}
 }
 
@@ -88,6 +87,12 @@ func cloudWatchInsightsQuery(svc *cloudwatchlogs.CloudWatchLogs, startTimeEpoch 
 	return queryResultsOutput, nil
 }
 
+func setUpRouter(svc *cloudwatchlogs.CloudWatchLogs) *gin.Engine {
+	router := gin.Default()
+	router.GET("api/open_xml", queryUploadedOpenXmls(svc))
+	return router
+}
+
 func main() {
 	sess, sessionError := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
@@ -98,11 +103,9 @@ func main() {
 	
 	svc := cloudwatchlogs.New(sess)
 
-	router := gin.Default()
-
-	router.GET("api/open_xml", queryUploadedOpenXmls(svc))
-
-	if routerError := router.Run(); routerError != nil {
+	router := setUpRouter(svc)
+	routerError := router.Run()
+	if routerError != nil {
 		fmt.Println(routerError.Error())
 	}
 }
