@@ -31,39 +31,39 @@ func defaultEndTime() time.Time {
 
 func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var err error
-		var startTimeEpoch, endTimeEpoch int64
-
 		startTime := c.Query("startTime")
-		startTimeEpoch, err = convertEpochStringToUint64(startTime, defaultStartTime().Unix())
-		 if err != nil {
-			fmt.Println(err.Error())
+		startTimeEpoch, startTimeError := convertEpochStringToUint64(startTime, defaultStartTime().Unix())
+		 if startTimeError != nil {
+			fmt.Println(startTimeError.Error())
 			return
 		}
 
 		endTime := c.Query("endTime")
-		endTimeEpoch, err = convertEpochStringToUint64(endTime, defaultEndTime().Unix())
-		if err != nil {
-			fmt.Println(err.Error())
+		endTimeEpoch, endTimeError := convertEpochStringToUint64(endTime, defaultEndTime().Unix())
+		if endTimeError != nil {
+			fmt.Println(endTimeError.Error())
 			return
 		}
 
-		queryString := `fields @timestamp, @message
-		| sort @timestamp desc
-		| limit 20`
-
 		logGroupName := "/aws/lambda/AWSUpload"
 
-		input := &cloudwatchlogs.StartQueryInput{
-			EndTime: &endTimeEpoch,
+		queryString := `fields @timestamp, @message | sort @timestamp desc | limit 20` //TODO change query
+
+		startQueryInput := &cloudwatchlogs.StartQueryInput {
+			StartTime: aws.Int64(startTimeEpoch),
+			EndTime: aws.Int64(endTimeEpoch),
 			LogGroupName: aws.String(logGroupName),
 			QueryString: aws.String(queryString),
-			StartTime: &startTimeEpoch,
 		}
-		var startQueryOutput *cloudwatchlogs.StartQueryOutput
-		startQueryOutput, err = svc.StartQuery(input)
 
+		startQueryOutput, startQueryError := svc.StartQuery(startQueryInput)
+		if startQueryError != nil {
+			fmt.Println(startQueryError.Error())
+			return
+		}
 
+		queryResultsInput := &cloudwatchlogs.GetQueryResultsInput{QueryId: startQueryOutput.QueryId}
+		req, resp := svc.GetQueryResults(queryResultsInput)
 
 		c.String(http.StatusOK, "Hi")
 	}
