@@ -46,9 +46,7 @@ func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 		}
 
 		logGroupName := "/aws/lambda/AWSUpload"
-
 		queryString := `fields @timestamp, @message | sort @timestamp desc | limit 20` //TODO change query
-
 		startQueryInput := &cloudwatchlogs.StartQueryInput {
 			StartTime: aws.Int64(startTimeEpoch),
 			EndTime: aws.Int64(endTimeEpoch),
@@ -63,24 +61,40 @@ func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 		}
 
 		queryResultsInput := &cloudwatchlogs.GetQueryResultsInput{QueryId: startQueryOutput.QueryId}
-		req, resp := svc.GetQueryResults(queryResultsInput)
+		queryResultsOutput, getQueryResultsError := svc.GetQueryResults(queryResultsInput)
+		if getQueryResultsError != nil {
+			fmt.Println(getQueryResultsError.Error())
+			return
+		}
+		for *queryResultsOutput.Status == cloudwatchlogs.QueryStatusRunning || *queryResultsOutput.Status == cloudwatchlogs.QueryStatusScheduled {
+			fmt.Print("Inside waiting")
+			queryResultsOutput, getQueryResultsError = svc.GetQueryResults(queryResultsInput)
+			if getQueryResultsError != nil {
+				fmt.Println(getQueryResultsError.Error())
+				return
+			}
+		}
+		fmt.Println(queryResultsOutput)
 
 		c.String(http.StatusOK, "Hi")
 	}
 }
 
 func main() {
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	}))
+	sess, sessionError := session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1")},
+	)
+	if sessionError != nil {
+		fmt.Println(sessionError.Error())
+	}
+	
 	svc := cloudwatchlogs.New(sess)
 
 	router := gin.Default()
+
 	router.GET("api/open_xml", queryUploadedOpenXmls(svc))
 
-	err := router.Run()
-	if err != nil {
-		fmt.Println(err.Error())
+	if routerError := router.Run(); routerError != nil {
+		fmt.Println(routerError.Error())
 	}
 }
-
