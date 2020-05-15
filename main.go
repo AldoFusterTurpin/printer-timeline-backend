@@ -11,6 +11,10 @@ import (
 	"time"
 )
 
+//if query is multiline, it will not work
+const uploadedXmlQuery = `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key | filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) | sort @timestamp desc`
+
+
 func convertEpochStringToUint64(epochToConvert string, defaultEpoch int64) (epochConverted int64, err error) {
 	if epochToConvert == "" {
 		return defaultEpoch, nil
@@ -27,7 +31,6 @@ func defaultStartTime() time.Time {
 func defaultEndTime() time.Time {
 	return time.Now()
 }
-
 
 func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -46,7 +49,7 @@ func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 		}
 
 		logGroupName := "/aws/lambda/AWSUpload"
-		queryString := `fields @timestamp, @message | sort @timestamp desc | limit 20` //TODO change query
+		queryString := uploadedXmlQuery
 		queryResultsOutput, err := cloudWatchInsightsQuery(svc, startTimeEpoch, endTimeEpoch, logGroupName, queryString)
 		if err != nil {
 			return
