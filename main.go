@@ -47,37 +47,45 @@ func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 
 		logGroupName := "/aws/lambda/AWSUpload"
 		queryString := `fields @timestamp, @message | sort @timestamp desc | limit 20` //TODO change query
-		startQueryInput := &cloudwatchlogs.StartQueryInput {
-			StartTime: aws.Int64(startTimeEpoch),
-			EndTime: aws.Int64(endTimeEpoch),
-			LogGroupName: aws.String(logGroupName),
-			QueryString: aws.String(queryString),
-		}
-
-		startQueryOutput, startQueryError := svc.StartQuery(startQueryInput)
-		if startQueryError != nil {
-			fmt.Println(startQueryError.Error())
+		queryResultsOutput, err := cloudWatchInsightsQuery(svc, startTimeEpoch, endTimeEpoch, logGroupName, queryString)
+		if err != nil {
 			return
-		}
-
-		queryResultsInput := &cloudwatchlogs.GetQueryResultsInput{QueryId: startQueryOutput.QueryId}
-		queryResultsOutput, getQueryResultsError := svc.GetQueryResults(queryResultsInput)
-		if getQueryResultsError != nil {
-			fmt.Println(getQueryResultsError.Error())
-			return
-		}
-		for *queryResultsOutput.Status == cloudwatchlogs.QueryStatusRunning || *queryResultsOutput.Status == cloudwatchlogs.QueryStatusScheduled {
-			fmt.Print("Inside waiting")
-			queryResultsOutput, getQueryResultsError = svc.GetQueryResults(queryResultsInput)
-			if getQueryResultsError != nil {
-				fmt.Println(getQueryResultsError.Error())
-				return
-			}
 		}
 		fmt.Println(queryResultsOutput)
 
-		c.String(http.StatusOK, "Hi")
+		c.JSON(http.StatusOK, gin.H{"result": queryResultsOutput})
 	}
+}
+
+func cloudWatchInsightsQuery(svc *cloudwatchlogs.CloudWatchLogs, startTimeEpoch int64, endTimeEpoch int64, logGroupName string, queryString string) (*cloudwatchlogs.GetQueryResultsOutput, error) {
+	startQueryInput := &cloudwatchlogs.StartQueryInput{
+		StartTime:    aws.Int64(startTimeEpoch),
+		EndTime:      aws.Int64(endTimeEpoch),
+		LogGroupName: aws.String(logGroupName),
+		QueryString:  aws.String(queryString),
+	}
+
+	startQueryOutput, startQueryError := svc.StartQuery(startQueryInput)
+	if startQueryError != nil {
+		fmt.Println(startQueryError.Error())
+		return nil, startQueryError
+	}
+
+	queryResultsInput := &cloudwatchlogs.GetQueryResultsInput{QueryId: startQueryOutput.QueryId}
+	queryResultsOutput, getQueryResultsError := svc.GetQueryResults(queryResultsInput)
+	if getQueryResultsError != nil {
+		fmt.Println(getQueryResultsError.Error())
+		return nil, getQueryResultsError
+	}
+	for *queryResultsOutput.Status == cloudwatchlogs.QueryStatusRunning || *queryResultsOutput.Status == cloudwatchlogs.QueryStatusScheduled {
+		fmt.Println("INFO: Waiting query to finish")
+		queryResultsOutput, getQueryResultsError = svc.GetQueryResults(queryResultsInput)
+		if getQueryResultsError != nil {
+			fmt.Println(getQueryResultsError.Error())
+			return nil, getQueryResultsError
+		}
+	}
+	return queryResultsOutput, nil
 }
 
 func main() {
