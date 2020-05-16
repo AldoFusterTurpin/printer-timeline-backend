@@ -11,8 +11,10 @@ import (
 	"time"
 )
 
-//if query is multiline, it will not work
-const uploadedXmlQuery = `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key | filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) | sort @timestamp desc`
+
+const uploadedXmlQuery = `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date
+| filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date)
+| sort @timestamp asc`
 
 
 func convertEpochStringToUint64(epochToConvert string, defaultEpoch int64) (epochConverted int64, err error) {
@@ -34,14 +36,14 @@ func defaultEndTime() time.Time {
 
 func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		startTime := c.Query("startTime")
+		startTime := c.Query("start_time")
 		startTimeEpoch, startTimeError := convertEpochStringToUint64(startTime, defaultStartTime().Unix())
 		 if startTimeError != nil {
 			fmt.Println(startTimeError.Error())
 			return
 		}
 
-		endTime := c.Query("endTime")
+		endTime := c.Query("end_time")
 		endTimeEpoch, endTimeError := convertEpochStringToUint64(endTime, defaultEndTime().Unix())
 		if endTimeError != nil {
 			fmt.Println(endTimeError.Error())
