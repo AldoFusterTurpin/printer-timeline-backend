@@ -11,11 +11,9 @@ import (
 	"time"
 )
 
-
 const uploadedXmlQuery = `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date
 | filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date)
 | sort @timestamp asc`
-
 
 func convertEpochStringToUint64(epochToConvert string, defaultEpoch int64) (epochConverted int64, err error) {
 	if epochToConvert == "" {
@@ -24,11 +22,9 @@ func convertEpochStringToUint64(epochToConvert string, defaultEpoch int64) (epoc
 	return strconv.ParseInt(epochToConvert, 10, 64)
 }
 
-
 func defaultStartTime() time.Time {
 	return time.Now().Add(-time.Minute * 15)
 }
-
 
 func defaultEndTime() time.Time {
 	return time.Now()
@@ -38,7 +34,7 @@ func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		startTime := c.Query("start_time")
 		startTimeEpoch, startTimeError := convertEpochStringToUint64(startTime, defaultStartTime().Unix())
-		 if startTimeError != nil {
+		if startTimeError != nil {
 			fmt.Println(startTimeError.Error())
 			return
 		}
@@ -105,7 +101,7 @@ func main() {
 	if sessionError != nil {
 		fmt.Println(sessionError.Error())
 	}
-	
+
 	svc := cloudwatchlogs.New(sess)
 
 	router := setUpRouter(svc)
