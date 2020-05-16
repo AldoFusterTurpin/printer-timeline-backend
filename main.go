@@ -13,11 +13,6 @@ import (
 	"time"
 )
 
-type PrinterInfo struct {
-	Pn string
-	Sn string
-}
-
 func convertEpochStringToUint64(epochToConvert string, defaultEpoch int64) (epochConverted int64, err error) {
 	if epochToConvert == "" {
 		return defaultEpoch, nil
@@ -49,45 +44,44 @@ func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 			return
 		}
 
-		logGroupName := "/aws/lambda/AWSUpload"
+		productNumber := c.Query("pn")
+		serialNumber := c.Query("sn")
 
-		productNumberRequest := c.Query("pn")
-		serialNumberRequest := c.Query("sn")
-		var queryString string
-		if productNumberRequest != "" && serialNumberRequest != "" {
-			templateString := `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date
-| filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date) and fields.ProductNumber="{{.productNumber}}" and fields.SerialNumber="{{.serialNumber}}"
-| sort @timestamp asc`
-			template, err := template.New("template").Parse(templateString)
-			if err != nil {
-				fmt.Println(err.Error())
-				return
-			}
-
-			varmap := map[string]interface{}{
-				"productNumber": productNumberRequest,
-				"serialNumber": serialNumberRequest,
-			}
-			//template.ExecuteTemplate(os.Stdout, "index", varmap)
-
-			var result bytes.Buffer
-			if err := template.Execute(&result, varmap); err != nil {
-				fmt.Println(err.Error())
-			}
-			queryString = result.String()
-		} /*else if  productNumberRequest != "" {
-			queryString = `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date
-			| filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date)
-			| sort @timestamp asc`
+		var templateString string
+		if productNumber != "" && serialNumber != "" {
+			templateString = `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date
+								| filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date) and fields.ProductNumber="{{.productNumber}}" and fields.SerialNumber="{{.serialNumber}}"
+								| sort @timestamp asc`
+		} else if  productNumber != "" {
+			templateString = `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date
+								| filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date) and fields.ProductNumber="{{.productNumber}}"
+								| sort @timestamp asc`
 		} else {
-
-		}*/
-
-		queryResultsOutput, err := cloudWatchInsightsQuery(svc, startTimeEpoch, endTimeEpoch, logGroupName, queryString)
+			templateString = `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date
+								| filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date)
+								| sort @timestamp asc`
+		}
+		myTemplate, err := template.New("myTemplate").Parse(templateString)
 		if err != nil {
+			fmt.Println(err.Error())
 			return
 		}
 
+		templateMapValues := map[string]interface{}{
+			"productNumber": productNumber,
+			"serialNumber":  serialNumber,
+		}
+		var result bytes.Buffer
+		if err := myTemplate.Execute(&result, templateMapValues); err != nil {
+			fmt.Println(err.Error())
+		}
+		queryString := result.String()
+		logGroupName := "/aws/lambda/AWSUpload"
+		queryResultsOutput, err := cloudWatchInsightsQuery(svc, startTimeEpoch, endTimeEpoch, logGroupName, queryString)
+		if err != nil {
+			fmt.Print(err.Error())
+			return
+		}
 		c.JSON(http.StatusOK, queryResultsOutput)
 	}
 }
@@ -120,6 +114,7 @@ func cloudWatchInsightsQuery(svc *cloudwatchlogs.CloudWatchLogs, startTimeEpoch 
 			return nil, getQueryResultsError
 		}
 	}
+	fmt.Println(*queryResultsOutput.Status)
 	return queryResultsOutput, nil
 }
 
