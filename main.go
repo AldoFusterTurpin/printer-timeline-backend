@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -8,12 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+	"text/template"
 	"time"
 )
 
-const uploadedXmlQuery = `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date
-| filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date)
-| sort @timestamp asc`
+type PrinterInfo struct {
+	Pn string
+	Sn string
+}
 
 func convertEpochStringToUint64(epochToConvert string, defaultEpoch int64) (epochConverted int64, err error) {
 	if epochToConvert == "" {
@@ -47,7 +50,39 @@ func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 		}
 
 		logGroupName := "/aws/lambda/AWSUpload"
-		queryString := uploadedXmlQuery
+
+		productNumberRequest := c.Query("pn")
+		serialNumberRequest := c.Query("sn")
+		var queryString string
+		if productNumberRequest != "" && serialNumberRequest != "" {
+			templateString := `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date
+| filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date) and fields.ProductNumber="{{.productNumber}}" and fields.SerialNumber="{{.serialNumber}}"
+| sort @timestamp asc`
+			template, err := template.New("template").Parse(templateString)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+
+			varmap := map[string]interface{}{
+				"productNumber": productNumberRequest,
+				"serialNumber": serialNumberRequest,
+			}
+			//template.ExecuteTemplate(os.Stdout, "index", varmap)
+
+			var result bytes.Buffer
+			if err := template.Execute(&result, varmap); err != nil {
+				fmt.Println(err.Error())
+			}
+			queryString = result.String()
+		} /*else if  productNumberRequest != "" {
+			queryString = `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date
+			| filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date)
+			| sort @timestamp asc`
+		} else {
+
+		}*/
+
 		queryResultsOutput, err := cloudWatchInsightsQuery(svc, startTimeEpoch, endTimeEpoch, logGroupName, queryString)
 		if err != nil {
 			return
