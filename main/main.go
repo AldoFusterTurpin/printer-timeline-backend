@@ -20,10 +20,7 @@ func defaultEndTime() time.Time {
 	return time.Now()
 }
 
-func convertEpochStringToUint64(epochToConvert string, defaultEpoch int64) (epochConverted int64, err error) {
-	if epochToConvert == "" {
-		return defaultEpoch, nil
-	}
+func convertEpochStringToUint64(epochToConvert string) (epochConverted int64, err error) {
 	return strconv.ParseInt(epochToConvert, 10, 64)
 }
 
