@@ -59,7 +59,7 @@ func cloudWatchInsightsQuery(svc *cloudwatchlogs.CloudWatchLogs, startTimeEpoch 
 
 func initRouter(svc *cloudwatchlogs.CloudWatchLogs) *gin.Engine {
 	router := gin.Default()
-	router.GET("api/open_xml", queryUploadedOpenXmls(svc))
+	router.GET("api/open_xml", getUploadedOpenXmls(svc))
 	return router
 }
 

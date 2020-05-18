@@ -27,7 +27,7 @@ func prepareInsightsQueryParametersOfUploadedXmlsQuery(c *gin.Context) (startTim
 	productNumber := c.Query("pn")
 	serialNumber := c.Query("sn")
 
-	templateString := getQueryTemplateOfUploadedXmls(productNumber, serialNumber)
+	templateString := getQueryTemplate(productNumber, serialNumber)
 	myTemplate, err := template.New("myTemplate").Parse(templateString)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -46,7 +46,7 @@ func prepareInsightsQueryParametersOfUploadedXmlsQuery(c *gin.Context) (startTim
 	return startTimeEpoch, endTimeEpoch, queryString, err
 }
 
-func getQueryTemplateOfUploadedXmls(productNumber string, serialNumber string) (templateString string) {
+func getQueryTemplate(productNumber string, serialNumber string) (templateString string) {
 	if productNumber != "" && serialNumber != "" {
 		return `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date
 								| filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date) and fields.ProductNumber="{{.productNumber}}" and fields.SerialNumber="{{.serialNumber}}"
@@ -66,16 +66,18 @@ func getQueryTemplateOfUploadedXmls(productNumber string, serialNumber string) (
 								| limit 10000`
 }
 
-func queryUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
+func getUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		startTimeEpoch, endTimeEpoch, queryString, err := prepareInsightsQueryParametersOfUploadedXmlsQuery(c)
 		if err != nil {
+			fmt.Println(err.Error())
+			c.JSON(http.StatusInternalServerError, nil)
 			return
 		}
 		logGroupName := "/aws/lambda/AWSUpload"
 		queryResultsOutput, err := cloudWatchInsightsQuery(svc, startTimeEpoch, endTimeEpoch, logGroupName, queryString)
 		if err != nil {
-			fmt.Print(err.Error())
+			fmt.Println(err.Error())
 			return
 		}
 		c.JSON(http.StatusOK, queryResultsOutput)
