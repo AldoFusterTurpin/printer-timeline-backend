@@ -1,17 +1,19 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/gin-gonic/gin"
+	"os"
 	"strconv"
 	"time"
 )
 
 func defaultStartTime() time.Time {
-	return time.Now().Add(-time.Minute * 15)
+	return time.Now().Add(-time.Minute * 5)
 }
 
 func defaultEndTime() time.Time {
@@ -64,9 +66,15 @@ func initRouter(svc *cloudwatchlogs.CloudWatchLogs) *gin.Engine {
 }
 
 func main() {
+	awsRegion, ok := os.LookupEnv("AWS_REGION")
+	if !ok {
+		fmt.Println(errors.New("could not load BUCKET_REGION env var"))
+		return
+	}
+
 	var err error
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-east-1")},
+		Region: aws.String(awsRegion)},
 	)
 	if err != nil {
 		fmt.Println(err)
@@ -76,6 +84,7 @@ func main() {
 	svc := cloudwatchlogs.New(sess)
 
 	router := initRouter(svc)
+
 	if err = router.Run(); err != nil {
 		fmt.Println(err.Error())
 		return
