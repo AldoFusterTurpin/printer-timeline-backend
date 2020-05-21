@@ -1,6 +1,7 @@
-package main
+package openXml
 
 import (
+	"bitbucket.org/aldoft/printer-timeline-backend/api/common"
 	"bytes"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -42,7 +43,7 @@ func getInfoFromQueryStrings(c *gin.Context) (*QueryPrinterInfo, error) {
 
 	timeTypeStr := c.Query("time_type")
 	if timeTypeStr == "" {
-		return nil, QueryStringMissingTimeRangeType
+		return nil, common.QueryStringMissingTimeRangeType
 	}
 
 	startTimeStr := c.Query("start_time")
@@ -50,45 +51,45 @@ func getInfoFromQueryStrings(c *gin.Context) (*QueryPrinterInfo, error) {
 	switch timeTypeStr {
 	case "relative":
 		if startTimeStr == "" {
-			queryPrinterInfo.StartTimeEpoch = defaultStartTime().Unix()
+			queryPrinterInfo.StartTimeEpoch = common.DefaultStartTime().Unix()
 		} else {
 			var err error
-			queryPrinterInfo.StartTimeEpoch, err = convertEpochStringToUint64(startTimeStr)
+			queryPrinterInfo.StartTimeEpoch, err = common.ConvertEpochStringToUint64(startTimeStr)
 			if err != nil {
 				return nil, err
 			}
 		}
 
 		if endTimeStr != "" {
-			return nil, QueryStringPresentEndTime
+			return nil, common.QueryStringPresentEndTime
 		}
-		queryPrinterInfo.EndTimeEpoch = defaultEndTime().Unix()
+		queryPrinterInfo.EndTimeEpoch = common.DefaultEndTime().Unix()
 
 	case "absolute":
 		if startTimeStr == "" {
-			return nil, QueryStringMissingStartTime
+			return nil, common.QueryStringMissingStartTime
 		}
 		var err error
-		queryPrinterInfo.StartTimeEpoch, err = convertEpochStringToUint64(startTimeStr)
+		queryPrinterInfo.StartTimeEpoch, err = common.ConvertEpochStringToUint64(startTimeStr)
 		if err != nil {
 			return nil, err
 		}
 
 		if endTimeStr == "" {
-			return nil, QueryStringMissingEndTime
+			return nil, common.QueryStringMissingEndTime
 		}
-		queryPrinterInfo.EndTimeEpoch, err = convertEpochStringToUint64(endTimeStr)
+		queryPrinterInfo.EndTimeEpoch, err = common.ConvertEpochStringToUint64(endTimeStr)
 		if err != nil {
 			return nil, err
 		}
 	default:
-		return nil, QueryStringUnsupportedTimeRangeType
+		return nil, common.QueryStringUnsupportedTimeRangeType
 	}
 
 	queryPrinterInfo.ProductNumber = c.Query("pn")
 	queryPrinterInfo.SerialNumber = c.Query("sn")
 	if queryPrinterInfo.ProductNumber == "" && queryPrinterInfo.SerialNumber != ""{
-		return nil, QueryStringPnSn
+		return nil, common.QueryStringPnSn
 	}
 
 	return queryPrinterInfo, nil
@@ -121,16 +122,19 @@ func prepareInsightsQueryParameters(c *gin.Context) (startTimeEpoch int64, endTi
 }
 
 
-func getUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
+func GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		startTimeEpoch, endTimeEpoch, queryString, err := prepareInsightsQueryParameters(c)
 		if err != nil {
-			fmt.Println(err)
-			c.JSON(http.StatusInternalServerError, err)
+			fmt.Println(err.Error())
+			jsonResponse := gin.H{
+				"error": err.Error(),
+			}
+			c.JSON(http.StatusInternalServerError,  jsonResponse)
 			return
 		}
 		logGroupName := "/aws/lambda/AWSUpload"
-		queryResultsOutput, err := cloudWatchInsightsQuery(svc, startTimeEpoch, endTimeEpoch, logGroupName, queryString)
+		queryResultsOutput, err := common.CloudWatchInsightsQuery(svc, startTimeEpoch, endTimeEpoch, logGroupName, queryString)
 		if err != nil {
 			fmt.Println(err.Error())
 			return

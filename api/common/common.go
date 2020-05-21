@@ -1,30 +1,26 @@
-package main
+package common
 
 import (
-	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/gin-gonic/gin"
-	"os"
 	"strconv"
 	"time"
 )
 
-func defaultStartTime() time.Time {
-	return time.Now().Add(-time.Minute * 5)
+func DefaultStartTime() time.Time {
+	return time.Now().Add(-time.Minute * 15)
 }
 
-func defaultEndTime() time.Time {
+func DefaultEndTime() time.Time {
 	return time.Now()
 }
 
-func convertEpochStringToUint64(epochToConvert string) (epochConverted int64, err error) {
+func ConvertEpochStringToUint64(epochToConvert string) (epochConverted int64, err error) {
 	return strconv.ParseInt(epochToConvert, 10, 64)
 }
 
-func cloudWatchInsightsQuery(svc *cloudwatchlogs.CloudWatchLogs, startTimeEpoch int64, endTimeEpoch int64, logGroupName string, queryString string) (*cloudwatchlogs.GetQueryResultsOutput, error) {
+func CloudWatchInsightsQuery(svc *cloudwatchlogs.CloudWatchLogs, startTimeEpoch int64, endTimeEpoch int64, logGroupName string, queryString string) (*cloudwatchlogs.GetQueryResultsOutput, error) {
 	startQueryInput := &cloudwatchlogs.StartQueryInput{
 		StartTime:    aws.Int64(startTimeEpoch),
 		EndTime:      aws.Int64(endTimeEpoch),
@@ -54,36 +50,4 @@ func cloudWatchInsightsQuery(svc *cloudwatchlogs.CloudWatchLogs, startTimeEpoch 
 	}
 	fmt.Println(*queryResultsOutput.Status)
 	return queryResultsOutput, nil
-}
-
-func initRouter(svc *cloudwatchlogs.CloudWatchLogs) *gin.Engine {
-	router := gin.Default()
-	router.GET("api/open_xml", getUploadedOpenXmls(svc))
-	return router
-}
-
-func main() {
-	awsRegion, ok := os.LookupEnv("AWS_REGION")
-	if !ok {
-		fmt.Println(errors.New("could not load BUCKET_REGION env var"))
-		return
-	}
-
-	var err error
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(awsRegion)},
-	)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	svc := cloudwatchlogs.New(sess)
-
-	router := initRouter(svc)
-
-	if err = router.Run(); err != nil {
-		fmt.Println(err.Error())
-		return
-	}
 }
