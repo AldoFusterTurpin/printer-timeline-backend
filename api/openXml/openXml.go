@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"text/template"
+	"time"
 )
 
 
@@ -89,10 +90,9 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 		if startTimeStr == "" {
 			return nil, common.QueryStringMissingStartTimeError
 		}
-		var err error
 
-		startTimeEpoch, err := common.ConvertEpochStringToUint64(startTimeStr)
-		queryPrinterInfo.StartTimeEpoch = startTimeEpoch
+		var err error
+		queryPrinterInfo.StartTimeEpoch, err = common.ConvertEpochStringToUint64(startTimeStr)
 		if err != nil {
 			return nil, common.QueryStringUnsupportedStartTimeError
 		}
@@ -103,6 +103,11 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 		queryPrinterInfo.EndTimeEpoch, err = common.ConvertEpochStringToUint64(endTimeStr)
 		if err != nil {
 			return nil, err
+		}
+
+		diff := time.Unix(queryPrinterInfo.EndTimeEpoch, 0).Sub(time.Unix(queryPrinterInfo.StartTimeEpoch, 0))
+		if diff.Minutes() > 60 {
+			return nil, common.QueryStringTimeDifferenceTooBig
 		}
 	default:
 		return nil, common.QueryStringUnsupportedTimeRangeTypeError

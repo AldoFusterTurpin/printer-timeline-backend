@@ -224,19 +224,30 @@ var _ = Describe("OpenXml", func() {
 			})
 		})
 
-		Context("Request Query parameters time range type is absolute, start time is ok but end_time is missing", func() {
-			It("returns missing end time error", func() {
-				now := strconv.FormatInt(time.Now().Unix(), 10)
+		Context("Request Query parameters time range type is absolute and start time has wrong value (is a float)", func() {
+			It("returns unsupported start_time", func() {
 				queryParams := map[string]string{
 					"time_type": "absolute",
-					"start_time": now,
+					"start_time": "6.6",
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringUnsupportedStartTimeError))
+			})
+		})
+
+		Context("Request Query parameters time range type is absolute, start time is ok but end time is missing", func() {
+			It("returns missing end time error", func() {
+				nowEpoch := strconv.FormatInt(time.Now().Unix(), 10)
+				queryParams := map[string]string{
+					"time_type":  "absolute",
+					"start_time": nowEpoch,
 				}
 				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
 				Expect(err).To(Equal(common.QueryStringMissingEndTimeError))
 			})
 		})
 
-		Context("Request Query parameters time range type is absolute, start time is ok but end_time is empty", func() {
+		Context("Request Query parameters time range type is absolute, start time is ok but end time is empty", func() {
 			It("returns missing end time error", func() {
 				now := strconv.FormatInt(time.Now().Unix(), 10)
 				queryParams := map[string]string{
@@ -246,6 +257,20 @@ var _ = Describe("OpenXml", func() {
 				}
 				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
 				Expect(err).To(Equal(common.QueryStringMissingEndTimeError))
+			})
+		})
+
+		Context("Request Query parameters time range type is absolute but difference between start time and end time is more than one hour", func() {
+			It("returns query string time difference is too big", func() {
+				start := strconv.FormatInt(time.Now().Add(-time.Minute * 70).Unix(), 10)
+				end := strconv.FormatInt(time.Now().Unix(), 10)
+				queryParams := map[string]string{
+					"time_type": "absolute",
+					"start_time": start,
+					"end_time": end,
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringTimeDifferenceTooBig))
 			})
 		})
 	})
