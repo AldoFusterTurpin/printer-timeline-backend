@@ -370,5 +370,19 @@ var _ = Describe("OpenXml", func() {
 			})
 		})
 
+		Context("Request Query parameters time range type is not supported", func() {
+			It("returns unsupported time range type error", func() {
+				start := strconv.FormatInt(time.Now().Unix(), 10)
+				end := strconv.FormatInt(time.Now().Add(-time.Minute * 20).Unix(), 10)
+				queryParams := map[string]string{
+					"time_type": "invented_time_type",
+					"start_time": start,
+					"end_time": end,
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringUnsupportedTimeRangeTypeError))
+			})
+		})
+
 	})
 })
