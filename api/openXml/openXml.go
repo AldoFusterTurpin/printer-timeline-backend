@@ -102,7 +102,7 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 		}
 		queryPrinterInfo.EndTimeEpoch, err = common.ConvertEpochStringToUint64(endTimeStr)
 		if err != nil {
-			return nil, err
+			return nil, common.QueryStringUnsupportedEndTimeError
 		}
 
 		diff := time.Unix(queryPrinterInfo.EndTimeEpoch, 0).Sub(time.Unix(queryPrinterInfo.StartTimeEpoch, 0))
