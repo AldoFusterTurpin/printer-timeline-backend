@@ -90,9 +90,11 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 			return nil, common.QueryStringMissingStartTimeError
 		}
 		var err error
-		queryPrinterInfo.StartTimeEpoch, err = common.ConvertEpochStringToUint64(startTimeStr)
+
+		startTimeEpoch, err := common.ConvertEpochStringToUint64(startTimeStr)
+		queryPrinterInfo.StartTimeEpoch = startTimeEpoch
 		if err != nil {
-			return nil, err
+			return nil, common.QueryStringUnsupportedStartTimeError
 		}
 
 		if endTimeStr == "" {

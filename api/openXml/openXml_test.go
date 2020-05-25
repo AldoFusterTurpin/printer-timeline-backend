@@ -1,11 +1,12 @@
 package openXml_test
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-
 	"bitbucket.org/aldoft/printer-timeline-backend/api/common"
 	"bitbucket.org/aldoft/printer-timeline-backend/api/openXml"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"strconv"
+	"time"
 )
 
 var _ = Describe("OpenXml", func() {
@@ -188,6 +189,63 @@ var _ = Describe("OpenXml", func() {
 				}
 				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
 				Expect(err).To(Equal(common.QueryStringUnsupportedOffsetValueError))
+			})
+		})
+
+		Context("Request Query parameters time range type is absolute and start time is not present", func() {
+			It("returns missing start time error", func() {
+				queryParams := map[string]string{
+					"time_type": "absolute",
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringMissingStartTimeError))
+			})
+		})
+
+		Context("Request Query parameters time range type is absolute and start time is empty", func() {
+			It("returns missing start time error", func() {
+				queryParams := map[string]string{
+					"time_type": "absolute",
+					"start_time": "",
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringMissingStartTimeError))
+			})
+		})
+
+		Context("Request Query parameters time range type is absolute and start time has wrong value (is a word)", func() {
+			It("returns unsupported start_time", func() {
+				queryParams := map[string]string{
+					"time_type": "absolute",
+					"start_time": "This_is_invalid",
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringUnsupportedStartTimeError))
+			})
+		})
+
+		Context("Request Query parameters time range type is absolute, start time is ok but end_time is missing", func() {
+			It("returns missing end time error", func() {
+				now := strconv.FormatInt(time.Now().Unix(), 10)
+				queryParams := map[string]string{
+					"time_type": "absolute",
+					"start_time": now,
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringMissingEndTimeError))
+			})
+		})
+
+		Context("Request Query parameters time range type is absolute, start time is ok but end_time is empty", func() {
+			It("returns missing end time error", func() {
+				now := strconv.FormatInt(time.Now().Unix(), 10)
+				queryParams := map[string]string{
+					"time_type": "absolute",
+					"start_time": now,
+					"end_time": "",
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringMissingEndTimeError))
 			})
 		})
 	})
