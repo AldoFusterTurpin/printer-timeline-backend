@@ -273,5 +273,76 @@ var _ = Describe("OpenXml", func() {
 				Expect(err).To(Equal(common.QueryStringTimeDifferenceTooBig))
 			})
 		})
+
+		Context("Request Query parameters time range type is absolute but difference between start time and end time is more than one hour", func() {
+			It("returns query string time difference is too big", func() {
+				start := strconv.FormatInt(time.Now().Add(-time.Hour * 2).Unix(), 10)
+				end := strconv.FormatInt(time.Now().Add(time.Minute * 3).Unix(), 10)
+				queryParams := map[string]string{
+					"time_type": "absolute",
+					"start_time": start,
+					"end_time": end,
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringTimeDifferenceTooBig))
+			})
+		})
+
+		Context("Request Query parameters time range type is absolute and difference between start time and end time is ok", func() {
+			It("returns no error", func() {
+				start := strconv.FormatInt(time.Now().Add(-time.Minute * 30).Unix(), 10)
+				end := strconv.FormatInt(time.Now().Unix(), 10)
+				queryParams := map[string]string{
+					"time_type": "absolute",
+					"start_time": start,
+					"end_time": end,
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(BeNil())
+			})
+		})
+
+		Context("Request Query parameters time range type is absolute and difference between start time and end time is ok", func() {
+			It("returns no error", func() {
+				start := strconv.FormatInt(time.Now().Add(-time.Minute * 60).Unix(), 10)
+				end := strconv.FormatInt(time.Now().Unix(), 10)
+				queryParams := map[string]string{
+					"time_type": "absolute",
+					"start_time": start,
+					"end_time": end,
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(BeNil())
+			})
+		})
+
+		Context("Request Query parameters time range type is absolute and difference between start time and end time is too big", func() {
+			It("returns query string time difference is too big", func() {
+				start := strconv.FormatInt(time.Now().Add(-time.Minute * 61).Unix(), 10)
+				end := strconv.FormatInt(time.Now().Unix(), 10)
+				queryParams := map[string]string{
+					"time_type": "absolute",
+					"start_time": start,
+					"end_time": end,
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringTimeDifferenceTooBig))
+			})
+		})
+
+		Context("Request Query parameters time range type is absolute but end time is previous than start time", func() {
+			It("returns query string end time is previous than start time error", func() {
+				start := strconv.FormatInt(time.Now().Unix(), 10)
+				end := strconv.FormatInt(time.Now().Add(-time.Minute * 20).Unix(), 10)
+				queryParams := map[string]string{
+					"time_type": "absolute",
+					"start_time": start,
+					"end_time": end,
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringEndTimePreviousThanStartTime))
+			})
+		})
+
 	})
 })

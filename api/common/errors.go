@@ -20,6 +20,7 @@ var (
 	QueryStringUnsupportedStartTimeError = errors.New("query string unsupported start time")
 
 	QueryStringTimeDifferenceTooBig = errors.New("query string difference between start_time and end_time is too big")
+	QueryStringEndTimePreviousThanStartTime = errors.New("query string end time is previous in time than start time error")
 
 	QueryStringPnSnError = errors.New("query string Product Number missing but Serial Number present")
 )

@@ -109,6 +109,9 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 		if diff.Minutes() > 60 {
 			return nil, common.QueryStringTimeDifferenceTooBig
 		}
+		if diff.Minutes() < 0 {
+			return nil, common.QueryStringEndTimePreviousThanStartTime
+		}
 	default:
 		return nil, common.QueryStringUnsupportedTimeRangeTypeError
 	}
