@@ -60,7 +60,7 @@ var _ = Describe("OpenXml", func() {
 					"start_time": "1590084529",
 				}
 				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
-				Expect(err).To(Equal(common.QueryStringPresentStartTimeError))
+				Expect(err).To(Equal(common.QueryStringStartTimeAppearsError))
 			})
 		})
 
@@ -71,7 +71,7 @@ var _ = Describe("OpenXml", func() {
 					"end_time": "1590084529",
 				}
 				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
-				Expect(err).To(Equal(common.QueryStringPresentEndTimeError))
+				Expect(err).To(Equal(common.QueryStringEndTimeAppearsError))
 			})
 		})
 
@@ -89,19 +89,90 @@ var _ = Describe("OpenXml", func() {
 			It("returns unsupported offset units error", func() {
 				queryParams := map[string]string{
 					"time_type": "relative",
-					"offset_units": "days",
+					"offset_units": "days", //days are not supported for now
 				}
 				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
 				Expect(err).To(Equal(common.QueryStringUnsupportedOffsetUnitsError))
 			})
 		})
 
-		Context("Request Query parameters time range type is relative, offset units is ok but offset value is too big", func() {
-			It("returns unsupported offset value error because is too big", func() {
+		Context("Request Query parameters time range type is relative and offset value is missing", func() {
+			It("returns missing offset value error", func() {
+				queryParams := map[string]string{
+					"time_type": "relative",
+					"offset_units": "minutes",
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringMissingOffsetValueError))
+			})
+		})
+
+		Context("Request Query parameters time range type is relative, offset units is minutes but offset value is too big", func() {
+			It("returns unsupported offset value error", func() {
 				queryParams := map[string]string{
 					"time_type": "relative",
 					"offset_units": "minutes",
 					"offset_value": "61",
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringUnsupportedOffsetValueError))
+			})
+		})
+
+		Context("Request Query parameters time range type is relative, offset units is minutes but offset value is negative", func() {
+			It("returns unsupported offset value error", func() {
+				queryParams := map[string]string{
+					"time_type": "relative",
+					"offset_units": "minutes",
+					"offset_value": "-61",
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringUnsupportedOffsetValueError))
+			})
+		})
+
+		Context("Request Query parameters time range type is relative, offset units is minutes but offset value is zero", func() {
+			It("returns unsupported offset value error", func() {
+				queryParams := map[string]string{
+					"time_type": "relative",
+					"offset_units": "minutes",
+					"offset_value": "0",
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringUnsupportedOffsetValueError))
+			})
+		})
+
+		Context("Request Query parameters time range type is relative, offset units is minutes and offset value is ok", func() {
+			It("returns no error", func() {
+				queryParams := map[string]string{
+					"time_type": "relative",
+					"offset_units": "minutes",
+					"offset_value": "5",
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(BeNil())
+			})
+		})
+
+		Context("Request Query parameters time range type is relative, offset units is seconds but offset value is too big", func() {
+			It("returns unsupported offset value error", func() {
+				queryParams := map[string]string{
+					"time_type": "relative",
+					"offset_units": "seconds",
+					"offset_value": "36001",
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringUnsupportedOffsetValueError))
+			})
+		})
+
+		Context("Request Query parameters time range type is relative, offset units is seconds but offset value is negative", func() {
+			It("returns unsupported offset value error", func() {
+				queryParams := map[string]string{
+					"time_type": "relative",
+					"offset_units": "seconds",
+					"offset_value": "-1",
 				}
 				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
 				Expect(err).To(Equal(common.QueryStringUnsupportedOffsetValueError))

@@ -53,10 +53,10 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 	switch timeTypeStr {
 	case "relative":
 		if startTimeStr != "" {
-			return nil, common.QueryStringPresentStartTimeError
+			return nil, common.QueryStringStartTimeAppearsError
 		}
 		if endTimeStr != "" {
-			return nil, common.QueryStringPresentEndTimeError
+			return nil, common.QueryStringEndTimeAppearsError
 		}
 		if offsetUnits == "" {
 			return nil, common.QueryStringMissingOffsetUnitsError
@@ -64,7 +64,16 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 		if offsetUnits != "seconds" && offsetUnits != "minutes" {
 			return nil, common.QueryStringUnsupportedOffsetUnitsError
 		}
-		if offsetUnits == "minutes" && offsetValue > "60"{
+		if offsetValue == "" {
+			return nil, common.QueryStringMissingOffsetValueError
+		}
+		if offsetUnits == "minutes" && offsetValue > "60" {
+			return nil, common.QueryStringUnsupportedOffsetValueError
+		}
+		if offsetUnits == "seconds" && offsetValue > "3600" {
+			return nil, common.QueryStringUnsupportedOffsetValueError
+		}
+		if offsetValue < "1" {
 			return nil, common.QueryStringUnsupportedOffsetValueError
 		}
 		queryPrinterInfo.EndTimeEpoch = common.DefaultEndTime().Unix()
