@@ -38,36 +38,40 @@ func selectQueryTemplate(productNumber string, serialNumber string) (templateStr
 								| limit 10000`
 }
 
-func getInfoFromQueryStrings(c *gin.Context) (*QueryPrinterInfo, error) {
+func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterInfo, error) {
 	queryPrinterInfo := new(QueryPrinterInfo)
 
-	timeTypeStr := c.Query("time_type")
+	timeTypeStr := queryParameters["time_type"]
 	if timeTypeStr == "" {
-		return nil, common.QueryStringMissingTimeRangeType
+		return nil, common.QueryStringMissingTimeRangeTypeError
 	}
 
-	startTimeStr := c.Query("start_time")
-	endTimeStr := c.Query("end_time")
+	startTimeStr := queryParameters["start_time"]
+	endTimeStr := queryParameters["end_time"]
+	offsetUnits := queryParameters["offset_units"]
+	offsetValue := queryParameters["offset_value"]
 	switch timeTypeStr {
 	case "relative":
-		if startTimeStr == "" {
-			queryPrinterInfo.StartTimeEpoch = common.DefaultStartTime().Unix()
-		} else {
-			var err error
-			queryPrinterInfo.StartTimeEpoch, err = common.ConvertEpochStringToUint64(startTimeStr)
-			if err != nil {
-				return nil, err
-			}
+		if startTimeStr != "" {
+			return nil, common.QueryStringPresentStartTimeError
 		}
-
 		if endTimeStr != "" {
-			return nil, common.QueryStringPresentEndTime
+			return nil, common.QueryStringPresentEndTimeError
+		}
+		if offsetUnits == "" {
+			return nil, common.QueryStringMissingOffsetUnitsError
+		}
+		if offsetUnits != "seconds" && offsetUnits != "minutes" {
+			return nil, common.QueryStringUnsupportedOffsetUnitsError
+		}
+		if offsetUnits == "minutes" && offsetValue > "60"{
+			return nil, common.QueryStringUnsupportedOffsetValueError
 		}
 		queryPrinterInfo.EndTimeEpoch = common.DefaultEndTime().Unix()
 
 	case "absolute":
 		if startTimeStr == "" {
-			return nil, common.QueryStringMissingStartTime
+			return nil, common.QueryStringMissingStartTimeError
 		}
 		var err error
 		queryPrinterInfo.StartTimeEpoch, err = common.ConvertEpochStringToUint64(startTimeStr)
@@ -76,28 +80,28 @@ func getInfoFromQueryStrings(c *gin.Context) (*QueryPrinterInfo, error) {
 		}
 
 		if endTimeStr == "" {
-			return nil, common.QueryStringMissingEndTime
+			return nil, common.QueryStringMissingEndTimeError
 		}
 		queryPrinterInfo.EndTimeEpoch, err = common.ConvertEpochStringToUint64(endTimeStr)
 		if err != nil {
 			return nil, err
 		}
 	default:
-		return nil, common.QueryStringUnsupportedTimeRangeType
+		return nil, common.QueryStringUnsupportedTimeRangeTypeError
 	}
 
-	queryPrinterInfo.ProductNumber = c.Query("pn")
-	queryPrinterInfo.SerialNumber = c.Query("sn")
+	queryPrinterInfo.ProductNumber = queryParameters["pn"]
+	queryPrinterInfo.SerialNumber = queryParameters["sn"]
 	if queryPrinterInfo.ProductNumber == "" && queryPrinterInfo.SerialNumber != ""{
-		return nil, common.QueryStringPnSn
+		return nil, common.QueryStringPnSnError
 	}
 
 	return queryPrinterInfo, nil
 }
 
 
-func prepareInsightsQueryParameters(c *gin.Context) (startTimeEpoch int64, endTimeEpoch int64, awsInsightsQuery string, err error) {
-	queryPrinterInfo, err := getInfoFromQueryStrings(c)
+func PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (startTimeEpoch int64, endTimeEpoch int64, awsInsightsQuery string, err error) {
+	queryPrinterInfo, err := getInfoFromQueryStrings(requestQueryParameters)
 	if err != nil {
 		return
 	}
@@ -122,9 +126,16 @@ func prepareInsightsQueryParameters(c *gin.Context) (startTimeEpoch int64, endTi
 }
 
 
-func GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
+func OpenXmlHandler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		startTimeEpoch, endTimeEpoch, queryString, err := prepareInsightsQueryParameters(c)
+		queryParameters := make(map[string]string)
+		queryParameters["time_type"] = c.Query("time_type")
+		queryParameters["start_time"] = c.Query("start_time")
+		queryParameters["end_time"] = c.Query("end_time")
+		queryParameters["pn"] = c.Query("pn")
+		queryParameters["sn"] = c.Query("sn")
+
+		startTimeEpoch, endTimeEpoch, queryString, err := PrepareInsightsQueryParameters(queryParameters)
 		if err != nil {
 			fmt.Println(err.Error())
 			jsonResponse := gin.H{
