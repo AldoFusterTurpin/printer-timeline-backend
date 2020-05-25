@@ -107,6 +107,18 @@ var _ = Describe("OpenXml", func() {
 			})
 		})
 
+		Context("Request Query parameters time range type and offset_units are ok but offset value is not a number", func() {
+			It("returns unsupported offset value error", func() {
+				queryParams := map[string]string{
+					"time_type": "relative",
+					"offset_units": "seconds",
+					"offset_value": "Golang",
+				}
+				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				Expect(err).To(Equal(common.QueryStringUnsupportedOffsetValueError))
+			})
+		})
+
 		Context("Request Query parameters time range type is relative, offset units is minutes but offset value is too big", func() {
 			It("returns unsupported offset value error", func() {
 				queryParams := map[string]string{

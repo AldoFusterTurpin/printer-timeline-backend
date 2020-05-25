@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 	"text/template"
 )
 
@@ -67,13 +68,19 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 		if offsetValue == "" {
 			return nil, common.QueryStringMissingOffsetValueError
 		}
-		if offsetUnits == "minutes" && offsetValue > "60" {
+
+		offsetValueInt, err := strconv.Atoi(offsetValue)
+		if  err != nil {
 			return nil, common.QueryStringUnsupportedOffsetValueError
 		}
-		if offsetUnits == "seconds" && offsetValue > "3600" {
+
+		if offsetUnits == "minutes" && offsetValueInt > 60 {
 			return nil, common.QueryStringUnsupportedOffsetValueError
 		}
-		if offsetValue < "1" {
+		if offsetUnits == "seconds" && offsetValueInt > 3600 {
+			return nil, common.QueryStringUnsupportedOffsetValueError
+		}
+		if offsetValueInt < 1 {
 			return nil, common.QueryStringUnsupportedOffsetValueError
 		}
 		queryPrinterInfo.EndTimeEpoch = common.DefaultEndTime().Unix()
