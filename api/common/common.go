@@ -11,16 +11,23 @@ type CloudWatchQueryExecutor interface {
 }
 
 type CloudWatchQueryExecutorImpl struct {
-	StartTimeEpoch, EndTimeEpoch int64
-	LogGroupName, QueryString    string
+	startTimeEpoch, endTimeEpoch int64
+	logGroupName, queryString    string
 }
 
-func (queryExecutor CloudWatchQueryExecutorImpl) ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs) (*cloudwatchlogs.GetQueryResultsOutput, error) {
+func (queryExecutor* CloudWatchQueryExecutorImpl) Init(startTimeEpoch, endTimeEpoch int64, logGroupName, queryString string) {
+	queryExecutor.startTimeEpoch = startTimeEpoch
+	queryExecutor.endTimeEpoch = endTimeEpoch
+	queryExecutor.logGroupName = logGroupName
+	queryExecutor.queryString = queryString
+}
+
+func (queryExecutor* CloudWatchQueryExecutorImpl) ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs) (*cloudwatchlogs.GetQueryResultsOutput, error) {
 	startQueryInput := &cloudwatchlogs.StartQueryInput{
-		StartTime:    aws.Int64(queryExecutor.StartTimeEpoch),
-		EndTime:      aws.Int64(queryExecutor.EndTimeEpoch),
-		LogGroupName: aws.String(queryExecutor.LogGroupName),
-		QueryString:  aws.String(queryExecutor.QueryString),
+		StartTime:    aws.Int64(queryExecutor.startTimeEpoch),
+		EndTime:      aws.Int64(queryExecutor.endTimeEpoch),
+		LogGroupName: aws.String(queryExecutor.logGroupName),
+		QueryString:  aws.String(queryExecutor.queryString),
 	}
 
 	startQueryOutput, err := svc.StartQuery(startQueryInput)

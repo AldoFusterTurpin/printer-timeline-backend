@@ -11,20 +11,14 @@ import (
 	"time"
 )
 
-
 type OpenXmlService interface {
-	GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs, queryParameters map[string]string) (resultStatus int,  resultData *cloudwatchlogs.GetQueryResultsOutput)
+	GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs, queryParameters map[string]string) (resultStatus int, resultData *cloudwatchlogs.GetQueryResultsOutput)
 }
 
 type OpenXmlServiceImpl struct {
-	StartTimeEpoch int64
-	EndTimeEpoch int64
-	ProductNumber string
-	SerialNumber string
-	QueryString string
-	LogGroupName string
+	StartTimeEpoch, EndTimeEpoch                           int64
+	ProductNumber, SerialNumber, QueryString, LogGroupName string
 }
-
 
 func selectQueryTemplate(productNumber string, serialNumber string) (templateString string) {
 	if productNumber != "" && serialNumber != "" {
@@ -46,20 +40,11 @@ func selectQueryTemplate(productNumber string, serialNumber string) (templateStr
 								| limit 10000`
 }
 
-
-type QueryPrinterInfo struct {
-	StartTimeEpoch int64
-	EndTimeEpoch int64
-	ProductNumber string
-	SerialNumber string
-}
-
-func getQueryParamsInfo(queryParameters map[string]string) (*QueryPrinterInfo, error) {
-	queryPrinterInfo := new(QueryPrinterInfo)
+func (openXmlService *OpenXmlServiceImpl) Init(queryParameters map[string]string) error {
 
 	timeTypeStr := queryParameters["time_type"]
 	if timeTypeStr == "" {
-		return nil, common.QueryStringMissingTimeRangeTypeError
+		return common.QueryStringMissingTimeRangeTypeError
 	}
 
 	startTimeStr := queryParameters["start_time"]
@@ -69,37 +54,37 @@ func getQueryParamsInfo(queryParameters map[string]string) (*QueryPrinterInfo, e
 	switch timeTypeStr {
 	case "relative":
 		if startTimeStr != "" {
-			return nil, common.QueryStringStartTimeAppearsError
+			return common.QueryStringStartTimeAppearsError
 		}
 		if endTimeStr != "" {
-			return nil, common.QueryStringEndTimeAppearsError
+			return common.QueryStringEndTimeAppearsError
 		}
 		if offsetUnits == "" {
-			return nil, common.QueryStringMissingOffsetUnitsError
+			return common.QueryStringMissingOffsetUnitsError
 		}
 		if offsetUnits != "seconds" && offsetUnits != "minutes" {
-			return nil, common.QueryStringUnsupportedOffsetUnitsError
+			return common.QueryStringUnsupportedOffsetUnitsError
 		}
 		if offsetValue == "" {
-			return nil, common.QueryStringMissingOffsetValueError
+			return common.QueryStringMissingOffsetValueError
 		}
 
 		offsetValueInt, err := strconv.Atoi(offsetValue)
-		if  err != nil {
-			return nil, common.QueryStringUnsupportedOffsetValueError
+		if err != nil {
+			return common.QueryStringUnsupportedOffsetValueError
 		}
 
 		if offsetUnits == "minutes" && offsetValueInt > 60 {
-			return nil, common.QueryStringUnsupportedOffsetValueError
+			return common.QueryStringUnsupportedOffsetValueError
 		}
 		if offsetUnits == "seconds" && offsetValueInt > 3600 {
-			return nil, common.QueryStringUnsupportedOffsetValueError
+			return common.QueryStringUnsupportedOffsetValueError
 		}
 		if offsetValueInt < 1 {
-			return nil, common.QueryStringUnsupportedOffsetValueError
+			return common.QueryStringUnsupportedOffsetValueError
 		}
 
-		queryPrinterInfo.EndTimeEpoch = time.Now().Unix()
+		openXmlService.EndTimeEpoch = time.Now().Unix()
 
 		var duration time.Duration
 		if offsetUnits == "minutes" {
@@ -107,99 +92,89 @@ func getQueryParamsInfo(queryParameters map[string]string) (*QueryPrinterInfo, e
 		} else if offsetUnits == "seconds" {
 			duration = -1 * time.Second * time.Duration(offsetValueInt)
 		} else {
-			return nil, common.QueryStringUnsupportedOffsetUnitsError
+			return common.QueryStringUnsupportedOffsetUnitsError
 		}
-		queryPrinterInfo.StartTimeEpoch = time.Now().Add(duration).Unix()
-
+		openXmlService.StartTimeEpoch = time.Now().Add(duration).Unix()
 
 	case "absolute":
 		if startTimeStr == "" {
-			return nil, common.QueryStringMissingStartTimeError
+			return common.QueryStringMissingStartTimeError
 		}
 
 		var err error
-		queryPrinterInfo.StartTimeEpoch, err = strconv.ParseInt(startTimeStr, 10, 64)
+		openXmlService.StartTimeEpoch, err = strconv.ParseInt(startTimeStr, 10, 64)
 		if err != nil {
-			return nil, common.QueryStringUnsupportedStartTimeError
+			return common.QueryStringUnsupportedStartTimeError
 		}
 
 		if endTimeStr == "" {
-			return nil, common.QueryStringMissingEndTimeError
+			return common.QueryStringMissingEndTimeError
 		}
-		queryPrinterInfo.EndTimeEpoch, err = strconv.ParseInt(endTimeStr, 10, 64)
+		openXmlService.EndTimeEpoch, err = strconv.ParseInt(endTimeStr, 10, 64)
 		if err != nil {
-			return nil, common.QueryStringUnsupportedEndTimeError
+			return common.QueryStringUnsupportedEndTimeError
 		}
 
-		diff := time.Unix(queryPrinterInfo.EndTimeEpoch, 0).Sub(time.Unix(queryPrinterInfo.StartTimeEpoch, 0))
+		diff := time.Unix(openXmlService.EndTimeEpoch, 0).Sub(time.Unix(openXmlService.StartTimeEpoch, 0))
 		if diff.Minutes() > 60 {
-			return nil, common.QueryStringTimeDifferenceTooBig
+			return common.QueryStringTimeDifferenceTooBig
 		}
 		if diff.Minutes() < 0 {
-			return nil, common.QueryStringEndTimePreviousThanStartTime
+			return common.QueryStringEndTimePreviousThanStartTime
 		}
 	default:
-		return nil, common.QueryStringUnsupportedTimeRangeTypeError
+		return common.QueryStringUnsupportedTimeRangeTypeError
 	}
 
-	queryPrinterInfo.ProductNumber = queryParameters["pn"]
-	queryPrinterInfo.SerialNumber = queryParameters["sn"]
-	if queryPrinterInfo.ProductNumber == "" && queryPrinterInfo.SerialNumber != ""{
-		return nil, common.QueryStringPnSnError
+	openXmlService.ProductNumber = queryParameters["pn"]
+	openXmlService.SerialNumber = queryParameters["sn"]
+	if openXmlService.ProductNumber == "" && openXmlService.SerialNumber != "" {
+		return common.QueryStringPnSnError
 	}
 
-	return queryPrinterInfo, nil
+	return nil
 }
 
-
-func (openXmlService* OpenXmlServiceImpl) PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (err error) {
-	queryPrinterInfo, err := getQueryParamsInfo(requestQueryParameters)
-	if err != nil {
+func (openXmlService *OpenXmlServiceImpl) PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (err error) {
+	if err = openXmlService.Init(requestQueryParameters); err != nil {
 		return
 	}
 
-	templateString := selectQueryTemplate(queryPrinterInfo.ProductNumber, queryPrinterInfo.SerialNumber)
+	templateString := selectQueryTemplate(openXmlService.ProductNumber, openXmlService.SerialNumber)
 	queryTemplate, err := template.New("queryTemplate").Parse(templateString)
 	if err != nil {
 		return
 	}
 
-	mapValues := map[string]interface{} {
-		"productNumber": queryPrinterInfo.ProductNumber,
-		"serialNumber":  queryPrinterInfo.SerialNumber,
+	mapValues := map[string]interface{}{
+		"productNumber": openXmlService.ProductNumber,
+		"serialNumber":  openXmlService.SerialNumber,
 	}
 
 	var query bytes.Buffer
 	if err = queryTemplate.Execute(&query, mapValues); err != nil {
 		return
 	}
-
-	openXmlService.StartTimeEpoch = queryPrinterInfo.StartTimeEpoch
-	openXmlService.EndTimeEpoch = queryPrinterInfo.EndTimeEpoch
 	openXmlService.QueryString = query.String()
 	return nil
 }
 
+func (openXmlService *OpenXmlServiceImpl) GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs, queryParameters map[string]string) (int, *cloudwatchlogs.GetQueryResultsOutput) {
+	if err := openXmlService.PrepareInsightsQueryParameters(queryParameters); err != nil {
+		fmt.Println(err.Error())
+		return http.StatusInternalServerError, nil
+	}
 
-func (openXmlService* OpenXmlServiceImpl) GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs, queryParameters map[string]string) (int, *cloudwatchlogs.GetQueryResultsOutput) {
-		if err := openXmlService.PrepareInsightsQueryParameters(queryParameters); err != nil {
-			fmt.Println(err.Error())
-			return http.StatusInternalServerError, nil
-		}
+	openXmlService.LogGroupName = "/aws/lambda/AWSUpload"
 
-	    openXmlService.LogGroupName = "/aws/lambda/AWSUpload"
+	queryExecutor := new(common.CloudWatchQueryExecutorImpl)
+	queryExecutor.Init(openXmlService.StartTimeEpoch, openXmlService.EndTimeEpoch, openXmlService.LogGroupName, openXmlService.QueryString)
 
-		cloudWatchQueryExecutor := common.CloudWatchQueryExecutorImpl{
-			StartTimeEpoch: openXmlService.StartTimeEpoch,
-			EndTimeEpoch: openXmlService.EndTimeEpoch,
-			LogGroupName: openXmlService.LogGroupName,
-			QueryString: openXmlService.QueryString,
-		}
+	queryResultsOutput, err := queryExecutor.ExecuteQuery(svc)
+	if err != nil {
+		fmt.Println(err.Error())
+		return http.StatusInternalServerError, nil
+	}
 
-	queryResultsOutput, err := cloudWatchQueryExecutor.ExecuteQuery(svc)
-		if err != nil {
-			fmt.Println(err.Error())
-			return http.StatusInternalServerError, nil
-		}
-		return http.StatusOK, queryResultsOutput
+	return http.StatusOK, queryResultsOutput
 }
