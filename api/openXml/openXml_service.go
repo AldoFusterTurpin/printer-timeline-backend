@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 	"text/template"
@@ -164,16 +163,17 @@ func PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (s
 }
 
 
-func Handler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
+/*func Handler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		queryParameters := make(map[string]string)
-		queryParameters["time_type"] = c.Query("time_type")
-		queryParameters["start_time"] = c.Query("start_time")
-		queryParameters["offset_units"] = c.Query("offset_units")
-		queryParameters["offset_value"] = c.Query("offset_value")
-		queryParameters["end_time"] = c.Query("end_time")
-		queryParameters["pn"] = c.Query("pn")
-		queryParameters["sn"] = c.Query("sn")
+		queryParameters := map[string]string {
+			"time_type" : c.Query("time_type"),
+			"offset_units" : c.Query("offset_units"),
+			"offset_value" : c.Query("offset_value"),
+			"start_time" : c.Query("start_time"),
+			"end_time" : c.Query("end_time"),
+			"pn" : c.Query("pn"),
+			"sn" : c.Query("sn"),
+		}
 
 		startTimeEpoch, endTimeEpoch, queryString, err := PrepareInsightsQueryParameters(queryParameters)
 		if err != nil {
@@ -192,4 +192,20 @@ func Handler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 		}
 		c.JSON(http.StatusOK, queryResultsOutput)
 	}
+}*/
+
+func Handler(svc *cloudwatchlogs.CloudWatchLogs, queryParameters map[string]string) (int, *cloudwatchlogs.GetQueryResultsOutput) {
+		startTimeEpoch, endTimeEpoch, queryString, err := PrepareInsightsQueryParameters(queryParameters)
+		if err != nil {
+			fmt.Println(err.Error())
+			return http.StatusInternalServerError, nil
+		}
+
+		logGroupName := "/aws/lambda/AWSUpload"
+		queryResultsOutput, err := common.CloudWatchInsightsQuery(svc, startTimeEpoch, endTimeEpoch, logGroupName, queryString)
+		if err != nil {
+			fmt.Println(err.Error())
+			return http.StatusInternalServerError, nil
+		}
+		return http.StatusOK, queryResultsOutput
 }
