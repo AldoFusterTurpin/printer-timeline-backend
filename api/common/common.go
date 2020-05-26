@@ -4,19 +4,23 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"strconv"
 )
 
-func ConvertEpochStringToUint64(epochToConvert string) (epochConverted int64, err error) {
-	return strconv.ParseInt(epochToConvert, 10, 64)
+type CloudWatchQueryExecutor interface {
+	ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs) (*cloudwatchlogs.GetQueryResultsOutput, error)
 }
 
-func CloudWatchInsightsQuery(svc *cloudwatchlogs.CloudWatchLogs, startTimeEpoch int64, endTimeEpoch int64, logGroupName string, queryString string) (*cloudwatchlogs.GetQueryResultsOutput, error) {
+type CloudWatchQueryExecutorImpl struct {
+	StartTimeEpoch, EndTimeEpoch int64
+	LogGroupName, QueryString    string
+}
+
+func (queryExecutor CloudWatchQueryExecutorImpl) ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs) (*cloudwatchlogs.GetQueryResultsOutput, error) {
 	startQueryInput := &cloudwatchlogs.StartQueryInput{
-		StartTime:    aws.Int64(startTimeEpoch),
-		EndTime:      aws.Int64(endTimeEpoch),
-		LogGroupName: aws.String(logGroupName),
-		QueryString:  aws.String(queryString),
+		StartTime:    aws.Int64(queryExecutor.StartTimeEpoch),
+		EndTime:      aws.Int64(queryExecutor.EndTimeEpoch),
+		LogGroupName: aws.String(queryExecutor.LogGroupName),
+		QueryString:  aws.String(queryExecutor.QueryString),
 	}
 
 	startQueryOutput, err := svc.StartQuery(startQueryInput)
@@ -25,7 +29,9 @@ func CloudWatchInsightsQuery(svc *cloudwatchlogs.CloudWatchLogs, startTimeEpoch 
 		return nil, err
 	}
 
-	queryResultsInput := &cloudwatchlogs.GetQueryResultsInput{QueryId: startQueryOutput.QueryId}
+	queryResultsInput := &cloudwatchlogs.GetQueryResultsInput{
+		QueryId: startQueryOutput.QueryId,
+	}
 	queryResultsOutput, err := svc.GetQueryResults(queryResultsInput)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -39,6 +45,5 @@ func CloudWatchInsightsQuery(svc *cloudwatchlogs.CloudWatchLogs, startTimeEpoch 
 			return nil, err
 		}
 	}
-	fmt.Println(*queryResultsOutput.Status)
 	return queryResultsOutput, nil
 }

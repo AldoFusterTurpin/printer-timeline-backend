@@ -12,12 +12,19 @@ import (
 )
 
 
-type QueryPrinterInfo struct {
+type OpenXmlService interface {
+	GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs, queryParameters map[string]string) (resultStatus int,  resultData *cloudwatchlogs.GetQueryResultsOutput)
+}
+
+type OpenXmlServiceImpl struct {
 	StartTimeEpoch int64
 	EndTimeEpoch int64
 	ProductNumber string
 	SerialNumber string
+	QueryString string
+	LogGroupName string
 }
+
 
 func selectQueryTemplate(productNumber string, serialNumber string) (templateString string) {
 	if productNumber != "" && serialNumber != "" {
@@ -39,7 +46,15 @@ func selectQueryTemplate(productNumber string, serialNumber string) (templateStr
 								| limit 10000`
 }
 
-func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterInfo, error) {
+
+type QueryPrinterInfo struct {
+	StartTimeEpoch int64
+	EndTimeEpoch int64
+	ProductNumber string
+	SerialNumber string
+}
+
+func getQueryParamsInfo(queryParameters map[string]string) (*QueryPrinterInfo, error) {
 	queryPrinterInfo := new(QueryPrinterInfo)
 
 	timeTypeStr := queryParameters["time_type"]
@@ -103,7 +118,7 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 		}
 
 		var err error
-		queryPrinterInfo.StartTimeEpoch, err = common.ConvertEpochStringToUint64(startTimeStr)
+		queryPrinterInfo.StartTimeEpoch, err = strconv.ParseInt(startTimeStr, 10, 64)
 		if err != nil {
 			return nil, common.QueryStringUnsupportedStartTimeError
 		}
@@ -111,7 +126,7 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 		if endTimeStr == "" {
 			return nil, common.QueryStringMissingEndTimeError
 		}
-		queryPrinterInfo.EndTimeEpoch, err = common.ConvertEpochStringToUint64(endTimeStr)
+		queryPrinterInfo.EndTimeEpoch, err = strconv.ParseInt(endTimeStr, 10, 64)
 		if err != nil {
 			return nil, common.QueryStringUnsupportedEndTimeError
 		}
@@ -137,8 +152,8 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 }
 
 
-func PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (startTimeEpoch int64, endTimeEpoch int64, awsInsightsQuery string, err error) {
-	queryPrinterInfo, err := getInfoFromQueryStrings(requestQueryParameters)
+func (openXmlService* OpenXmlServiceImpl) PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (err error) {
+	queryPrinterInfo, err := getQueryParamsInfo(requestQueryParameters)
 	if err != nil {
 		return
 	}
@@ -159,50 +174,29 @@ func PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (s
 		return
 	}
 
-	return queryPrinterInfo.StartTimeEpoch, queryPrinterInfo.EndTimeEpoch, query.String(), nil
+	openXmlService.StartTimeEpoch = queryPrinterInfo.StartTimeEpoch
+	openXmlService.EndTimeEpoch = queryPrinterInfo.EndTimeEpoch
+	openXmlService.QueryString = query.String()
+	return nil
 }
 
 
-/*func Handler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		queryParameters := map[string]string {
-			"time_type" : c.Query("time_type"),
-			"offset_units" : c.Query("offset_units"),
-			"offset_value" : c.Query("offset_value"),
-			"start_time" : c.Query("start_time"),
-			"end_time" : c.Query("end_time"),
-			"pn" : c.Query("pn"),
-			"sn" : c.Query("sn"),
-		}
-
-		startTimeEpoch, endTimeEpoch, queryString, err := PrepareInsightsQueryParameters(queryParameters)
-		if err != nil {
-			fmt.Println(err.Error())
-			jsonResponse := gin.H{
-				"error": err.Error(),
-			}
-			c.JSON(http.StatusInternalServerError,  jsonResponse)
-			return
-		}
-		logGroupName := "/aws/lambda/AWSUpload"
-		queryResultsOutput, err := common.CloudWatchInsightsQuery(svc, startTimeEpoch, endTimeEpoch, logGroupName, queryString)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		c.JSON(http.StatusOK, queryResultsOutput)
-	}
-}*/
-
-func Handler(svc *cloudwatchlogs.CloudWatchLogs, queryParameters map[string]string) (int, *cloudwatchlogs.GetQueryResultsOutput) {
-		startTimeEpoch, endTimeEpoch, queryString, err := PrepareInsightsQueryParameters(queryParameters)
-		if err != nil {
+func (openXmlService* OpenXmlServiceImpl) GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs, queryParameters map[string]string) (int, *cloudwatchlogs.GetQueryResultsOutput) {
+		if err := openXmlService.PrepareInsightsQueryParameters(queryParameters); err != nil {
 			fmt.Println(err.Error())
 			return http.StatusInternalServerError, nil
 		}
 
-		logGroupName := "/aws/lambda/AWSUpload"
-		queryResultsOutput, err := common.CloudWatchInsightsQuery(svc, startTimeEpoch, endTimeEpoch, logGroupName, queryString)
+	    openXmlService.LogGroupName = "/aws/lambda/AWSUpload"
+
+		cloudWatchQueryExecutor := common.CloudWatchQueryExecutorImpl{
+			StartTimeEpoch: openXmlService.StartTimeEpoch,
+			EndTimeEpoch: openXmlService.EndTimeEpoch,
+			LogGroupName: openXmlService.LogGroupName,
+			QueryString: openXmlService.QueryString,
+		}
+
+	queryResultsOutput, err := cloudWatchQueryExecutor.ExecuteQuery(svc)
 		if err != nil {
 			fmt.Println(err.Error())
 			return http.StatusInternalServerError, nil
