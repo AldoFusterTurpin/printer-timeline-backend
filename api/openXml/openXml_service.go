@@ -84,7 +84,19 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 		if offsetValueInt < 1 {
 			return nil, common.QueryStringUnsupportedOffsetValueError
 		}
+
 		queryPrinterInfo.EndTimeEpoch = time.Now().Unix()
+
+		var duration time.Duration
+		if offsetUnits == "minutes" {
+			duration = -1 * time.Minute * time.Duration(offsetValueInt)
+		} else if offsetUnits == "seconds" {
+			duration = -1 * time.Second * time.Duration(offsetValueInt)
+		} else {
+			return nil, common.QueryStringUnsupportedOffsetUnitsError
+		}
+		queryPrinterInfo.StartTimeEpoch = time.Now().Add(duration).Unix()
+
 
 	case "absolute":
 		if startTimeStr == "" {
@@ -157,6 +169,8 @@ func Handler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 		queryParameters := make(map[string]string)
 		queryParameters["time_type"] = c.Query("time_type")
 		queryParameters["start_time"] = c.Query("start_time")
+		queryParameters["offset_units"] = c.Query("offset_units")
+		queryParameters["offset_value"] = c.Query("offset_value")
 		queryParameters["end_time"] = c.Query("end_time")
 		queryParameters["pn"] = c.Query("pn")
 		queryParameters["sn"] = c.Query("sn")
