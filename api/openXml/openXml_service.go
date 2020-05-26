@@ -84,7 +84,7 @@ func getInfoFromQueryStrings(queryParameters map[string]string) (*QueryPrinterIn
 		if offsetValueInt < 1 {
 			return nil, common.QueryStringUnsupportedOffsetValueError
 		}
-		queryPrinterInfo.EndTimeEpoch = common.DefaultEndTime().Unix()
+		queryPrinterInfo.EndTimeEpoch = time.Now().Unix()
 
 	case "absolute":
 		if startTimeStr == "" {
@@ -152,7 +152,7 @@ func PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (s
 }
 
 
-func OpenXmlHandler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
+func Handler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		queryParameters := make(map[string]string)
 		queryParameters["time_type"] = c.Query("time_type")

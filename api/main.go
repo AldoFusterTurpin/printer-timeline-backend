@@ -13,7 +13,7 @@ import (
 
 func initRouter(svc *cloudwatchlogs.CloudWatchLogs) *gin.Engine {
 	router := gin.Default()
-	router.GET("api/open_xml", openXml.OpenXmlHandler(svc))
+	router.GET("api/open_xml", openXml.Handler(svc))
 	return router
 }
 

@@ -5,16 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"strconv"
-	"time"
 )
-
-func DefaultStartTime() time.Time {
-	return time.Now().Add(-time.Minute * 15)
-}
-
-func DefaultEndTime() time.Time {
-	return time.Now()
-}
 
 func ConvertEpochStringToUint64(epochToConvert string) (epochConverted int64, err error) {
 	return strconv.ParseInt(epochToConvert, 10, 64)
