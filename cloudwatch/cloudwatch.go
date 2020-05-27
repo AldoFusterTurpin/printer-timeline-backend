@@ -1,4 +1,4 @@
-package common
+package cloudwatch
 
 import (
 	"fmt"
@@ -6,23 +6,23 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 )
 
-type CloudWatchQueryExecutor interface {
+type QueryExecutor interface {
 	ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs) (*cloudwatchlogs.GetQueryResultsOutput, error)
 }
 
-type CloudWatchQueryExecutorImpl struct {
+type QueryExecutorImpl struct {
 	startTimeEpoch, endTimeEpoch int64
 	logGroupName, queryString    string
 }
 
-func (queryExecutor* CloudWatchQueryExecutorImpl) Init(startTimeEpoch, endTimeEpoch int64, logGroupName, queryString string) {
+func (queryExecutor *QueryExecutorImpl) Init(startTimeEpoch, endTimeEpoch int64, logGroupName, queryString string) {
 	queryExecutor.startTimeEpoch = startTimeEpoch
 	queryExecutor.endTimeEpoch = endTimeEpoch
 	queryExecutor.logGroupName = logGroupName
 	queryExecutor.queryString = queryString
 }
 
-func (queryExecutor* CloudWatchQueryExecutorImpl) ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs) (*cloudwatchlogs.GetQueryResultsOutput, error) {
+func (queryExecutor *QueryExecutorImpl) ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs) (*cloudwatchlogs.GetQueryResultsOutput, error) {
 	startQueryInput := &cloudwatchlogs.StartQueryInput{
 		StartTime:    aws.Int64(queryExecutor.startTimeEpoch),
 		EndTime:      aws.Int64(queryExecutor.endTimeEpoch),

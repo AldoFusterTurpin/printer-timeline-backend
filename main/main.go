@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bitbucket.org/aldoft/printer-timeline-backend/api/openXml"
+	"bitbucket.org/aldoft/printer-timeline-backend/openXml"
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
@@ -27,7 +27,7 @@ func OpenXmlHandler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		queryParameters := extractQueryParameters(c)
 
-		openXmlService := openXml.OpenXmlServiceImpl{}
+		openXmlService := openXml.ServiceImpl{}
 		status, response := openXmlService.GetUploadedOpenXmls(svc, queryParameters)
 
 		c.JSON(status, response)
