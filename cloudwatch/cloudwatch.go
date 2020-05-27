@@ -6,28 +6,17 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 )
 
-type QueryExecutor interface {
-	ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs) (*cloudwatchlogs.GetQueryResultsOutput, error)
+type InsightsQueryParams struct {
+	StartTimeEpoch, EndTimeEpoch int64
+	LogGroupName, QueryString    string
 }
 
-type QueryExecutorImpl struct {
-	startTimeEpoch, endTimeEpoch int64
-	logGroupName, queryString    string
-}
-
-func (queryExecutor *QueryExecutorImpl) Init(startTimeEpoch, endTimeEpoch int64, logGroupName, queryString string) {
-	queryExecutor.startTimeEpoch = startTimeEpoch
-	queryExecutor.endTimeEpoch = endTimeEpoch
-	queryExecutor.logGroupName = logGroupName
-	queryExecutor.queryString = queryString
-}
-
-func (queryExecutor *QueryExecutorImpl) ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs) (*cloudwatchlogs.GetQueryResultsOutput, error) {
+func ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs, queryParams InsightsQueryParams) (*cloudwatchlogs.GetQueryResultsOutput, error) {
 	startQueryInput := &cloudwatchlogs.StartQueryInput{
-		StartTime:    aws.Int64(queryExecutor.startTimeEpoch),
-		EndTime:      aws.Int64(queryExecutor.endTimeEpoch),
-		LogGroupName: aws.String(queryExecutor.logGroupName),
-		QueryString:  aws.String(queryExecutor.queryString),
+		StartTime:    aws.Int64(queryParams.StartTimeEpoch),
+		EndTime:      aws.Int64(queryParams.EndTimeEpoch),
+		LogGroupName: aws.String(queryParams.LogGroupName),
+		QueryString:  aws.String(queryParams.QueryString),
 	}
 
 	startQueryOutput, err := svc.StartQuery(startQueryInput)

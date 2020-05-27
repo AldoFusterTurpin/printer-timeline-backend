@@ -27,9 +27,7 @@ func OpenXmlHandler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		queryParameters := extractQueryParameters(c)
 
-		openXmlService := openXml.ServiceImpl{}
-		status, response := openXmlService.GetUploadedOpenXmls(svc, queryParameters)
-
+		status, response := openXml.GetUploadedOpenXmls(svc, queryParameters)
 		c.JSON(status, response)
 	}
 }
