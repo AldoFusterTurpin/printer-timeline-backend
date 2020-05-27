@@ -2,6 +2,7 @@ package openXml
 
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/cloudwatch"
+	"bitbucket.org/aldoft/printer-timeline-backend/errors"
 	"bytes"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -44,7 +45,7 @@ func (openXmlService *ServiceImpl) Init(queryParameters map[string]string) error
 
 	timeTypeStr := queryParameters["time_type"]
 	if timeTypeStr == "" {
-		return QueryStringMissingTimeRangeTypeError
+		return errors.QueryStringMissingTimeRangeTypeError
 	}
 
 	startTimeStr := queryParameters["start_time"]
@@ -54,34 +55,34 @@ func (openXmlService *ServiceImpl) Init(queryParameters map[string]string) error
 	switch timeTypeStr {
 	case "relative":
 		if startTimeStr != "" {
-			return QueryStringStartTimeAppearsError
+			return errors.QueryStringStartTimeAppearsError
 		}
 		if endTimeStr != "" {
-			return QueryStringEndTimeAppearsError
+			return errors.QueryStringEndTimeAppearsError
 		}
 		if offsetUnits == "" {
-			return QueryStringMissingOffsetUnitsError
+			return errors.QueryStringMissingOffsetUnitsError
 		}
 		if offsetUnits != "seconds" && offsetUnits != "minutes" {
-			return QueryStringUnsupportedOffsetUnitsError
+			return errors.QueryStringUnsupportedOffsetUnitsError
 		}
 		if offsetValue == "" {
-			return QueryStringMissingOffsetValueError
+			return errors.QueryStringMissingOffsetValueError
 		}
 
 		offsetValueInt, err := strconv.Atoi(offsetValue)
 		if err != nil {
-			return QueryStringUnsupportedOffsetValueError
+			return errors.QueryStringUnsupportedOffsetValueError
 		}
 
 		if offsetUnits == "minutes" && offsetValueInt > 60 {
-			return QueryStringUnsupportedOffsetValueError
+			return errors.QueryStringUnsupportedOffsetValueError
 		}
 		if offsetUnits == "seconds" && offsetValueInt > 3600 {
-			return QueryStringUnsupportedOffsetValueError
+			return errors.QueryStringUnsupportedOffsetValueError
 		}
 		if offsetValueInt < 1 {
-			return QueryStringUnsupportedOffsetValueError
+			return errors.QueryStringUnsupportedOffsetValueError
 		}
 
 		openXmlService.EndTimeEpoch = time.Now().Unix()
@@ -92,44 +93,44 @@ func (openXmlService *ServiceImpl) Init(queryParameters map[string]string) error
 		} else if offsetUnits == "seconds" {
 			duration = -1 * time.Second * time.Duration(offsetValueInt)
 		} else {
-			return QueryStringUnsupportedOffsetUnitsError
+			return errors.QueryStringUnsupportedOffsetUnitsError
 		}
 		openXmlService.StartTimeEpoch = time.Now().Add(duration).Unix()
 
 	case "absolute":
 		if startTimeStr == "" {
-			return QueryStringMissingStartTimeError
+			return errors.QueryStringMissingStartTimeError
 		}
 
 		var err error
 		openXmlService.StartTimeEpoch, err = strconv.ParseInt(startTimeStr, 10, 64)
 		if err != nil {
-			return QueryStringUnsupportedStartTimeError
+			return errors.QueryStringUnsupportedStartTimeError
 		}
 
 		if endTimeStr == "" {
-			return QueryStringMissingEndTimeError
+			return errors.QueryStringMissingEndTimeError
 		}
 		openXmlService.EndTimeEpoch, err = strconv.ParseInt(endTimeStr, 10, 64)
 		if err != nil {
-			return QueryStringUnsupportedEndTimeError
+			return errors.QueryStringUnsupportedEndTimeError
 		}
 
 		diff := time.Unix(openXmlService.EndTimeEpoch, 0).Sub(time.Unix(openXmlService.StartTimeEpoch, 0))
 		if diff.Minutes() > 60 {
-			return QueryStringTimeDifferenceTooBig
+			return errors.QueryStringTimeDifferenceTooBig
 		}
 		if diff.Minutes() < 0 {
-			return QueryStringEndTimePreviousThanStartTime
+			return errors.QueryStringEndTimePreviousThanStartTime
 		}
 	default:
-		return QueryStringUnsupportedTimeRangeTypeError
+		return errors.QueryStringUnsupportedTimeRangeTypeError
 	}
 
 	openXmlService.ProductNumber = queryParameters["pn"]
 	openXmlService.SerialNumber = queryParameters["sn"]
 	if openXmlService.ProductNumber == "" && openXmlService.SerialNumber != "" {
-		return QueryStringPnSnError
+		return errors.QueryStringPnSnError
 	}
 
 	return nil

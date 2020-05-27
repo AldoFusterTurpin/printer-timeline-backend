@@ -1,4 +1,4 @@
-package openXml
+package errors
 
 import "errors"
 
