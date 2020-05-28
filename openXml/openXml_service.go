@@ -30,17 +30,8 @@ func selectQueryTemplate(productNumber, serialNumber string) (templateString str
 								| limit 10000`
 }
 
-func PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (queryParams cloudwatch.InsightsQueryParams, err error) {
-	startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(requestQueryParameters)
-	if err != nil {
-		return
-	}
 
-	productNumber, serialNumber, err := queryParamsCtrl.ExtractPrinterInfo(requestQueryParameters);
-	if err != nil {
-		return
-	}
-
+func createQuery(productNumber, serialNumber string) (query string, err error){
 	templateString := selectQueryTemplate(productNumber, serialNumber)
 	queryTemplate, err := template.New("queryTemplate").Parse(templateString)
 	if err != nil {
@@ -52,15 +43,31 @@ func PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (q
 		"serialNumber":  serialNumber,
 	}
 
-	var query bytes.Buffer
-	if err = queryTemplate.Execute(&query, mapValues); err != nil {
+	var queryBuf bytes.Buffer
+	if err = queryTemplate.Execute(&queryBuf, mapValues); err != nil {
 		return
 	}
+	return queryBuf.String(), nil
+}
+
+func PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (queryParams cloudwatch.InsightsQueryParams, err error) {
+	startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(requestQueryParameters)
+	if err != nil {
+		return
+	}
+
+	productNumber, serialNumber, err := queryParamsCtrl.ExtractPrinterInfo(requestQueryParameters);
+	if err != nil {
+		return
+	}
+
+	query, err := createQuery(productNumber, serialNumber)
+
 	queryParams = cloudwatch.InsightsQueryParams{
 		startTime,
 		endTime,
 		"/aws/lambda/AWSUpload",
-		query.String(),
+		query,
 	}
 	return queryParams, nil
 }
