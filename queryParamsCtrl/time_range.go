@@ -6,7 +6,17 @@ import (
 	"time"
 )
 
-func ExtractTimeRange(queryParameters map[string]string) (startTime int64, endTime int64, err error) {
+
+func stringToTime(s string) (time.Time, error) {
+	sec, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return time.Unix(sec, 0), nil
+}
+
+
+func ExtractTimeRange(queryParameters map[string]string) (startTime time.Time, endTime time.Time, err error) {
 
 	timeTypeStr := queryParameters["time_type"]
 	if timeTypeStr == "" {
@@ -14,17 +24,17 @@ func ExtractTimeRange(queryParameters map[string]string) (startTime int64, endTi
 		return
 	}
 
-	startTimeStr := queryParameters["start_time"]
-	endTimeStr := queryParameters["end_time"]
+	startTimeEpoch := queryParameters["start_time"]
+	endTimeEpoch := queryParameters["end_time"]
 	offsetUnits := queryParameters["offset_units"]
 	offsetValue := queryParameters["offset_value"]
 	switch timeTypeStr {
 	case "relative":
-		if startTimeStr != "" {
+		if startTimeEpoch != "" {
 			err = errors.QueryStringStartTimeAppears
 			return
 		}
-		if endTimeStr != "" {
+		if endTimeEpoch != "" {
 			err = errors.QueryStringEndTimeAppears
 			return
 		}
@@ -61,39 +71,39 @@ func ExtractTimeRange(queryParameters map[string]string) (startTime int64, endTi
 			return
 		}
 
-		endTime = time.Now().Unix()
+		endTime = time.Now()
 
-		var duration time.Duration
+		var durationOffset time.Duration
 		if offsetUnits == "minutes" {
-			duration = -1 * time.Minute * time.Duration(offsetValueInt)
+			durationOffset = -1 * time.Minute * time.Duration(offsetValueInt)
 		} else if offsetUnits == "seconds" {
-			duration = -1 * time.Second * time.Duration(offsetValueInt)
+			durationOffset = -1 * time.Second * time.Duration(offsetValueInt)
 		}
-		startTime = time.Now().Add(duration).Unix()
+		startTime = time.Now().Add(durationOffset)
 
 	case "absolute":
-		if startTimeStr == "" {
+		if startTimeEpoch == "" {
 			err = errors.QueryStringMissingStartTime
 			return
 		}
 
-		startTime, err = strconv.ParseInt(startTimeStr, 10, 64)
+		startTime, err = stringToTime(startTimeEpoch)
 		if err != nil {
 			err = errors.QueryStringUnsupportedStartTime
 			return
 		}
 
-		if endTimeStr == "" {
+		if endTimeEpoch == "" {
 			err = errors.QueryStringMissingEndTime
 			return
 		}
-		endTime, err = strconv.ParseInt(endTimeStr, 10, 64)
+		endTime, err = stringToTime(endTimeEpoch)
 		if err != nil {
 			err = errors.QueryStringUnsupportedEndTime
 			return
 		}
 
-		diff := time.Unix(endTime, 0).Sub(time.Unix(startTime, 0))
+		diff := endTime.Sub(startTime)
 		if diff.Minutes() > 60 {
 			err = errors.QueryStringTimeDifferenceTooBig
 			return

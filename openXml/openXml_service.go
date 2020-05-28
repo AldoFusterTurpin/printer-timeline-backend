@@ -65,8 +65,8 @@ func GetInsightsQueryParams(requestQueryParams map[string]string) (insightsQuery
 
 	queryToExecute, err := createQuery(productNumber, serialNumber)
 	insightsQueryParams = cloudwatch.InsightsQueryParams{
-		StartTimeEpoch: startTime,
-		EndTimeEpoch:   endTime,
+		StartTimeEpoch: startTime.Unix(),
+		EndTimeEpoch:   endTime.Unix(),
 		LogGroupName:   "/aws/lambda/AWSUpload",
 		Query:          queryToExecute,
 	}

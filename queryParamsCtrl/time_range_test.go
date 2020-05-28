@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-var _ = Describe("Time range", func() {
-	Describe("Prepare insights query parameters", func() {
+var _ = Describe("Time range controller", func() {
+	Describe("Extract Time Range from query parameters", func() {
 
 		Context("Request query parameters not contain any parameter", func() {
 			It("returns missing time range type error", func() {
@@ -384,5 +384,39 @@ var _ = Describe("Time range", func() {
 			})
 		})
 
+		Context("Relative time and query params ok", func() {
+			It("returns correct startTime and endTime based on query params", func() {
+				queryParams := map[string]string{
+					"time_type":  "relative",
+					"offset_units": "minutes",
+					"offset_value":   "5",
+				}
+				expectedEndTime := time.Now()
+				startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+
+				offsetValue, _ := strconv.Atoi(queryParams["offset_value"])
+
+				duration := -1 * time.Minute * time.Duration(offsetValue)
+
+				expectedStartTime := time.Now().Add(duration)
+
+				Expect(err).To(BeNil())
+
+				Expect(startTime.Year()).To(Equal(expectedStartTime.Year()))
+				Expect(startTime.Month()).To(Equal(expectedStartTime.Month()))
+				Expect(startTime.Day()).To(Equal(expectedStartTime.Day()))
+				Expect(startTime.Hour()).To(Equal(expectedStartTime.Hour()))
+				Expect(startTime.Minute()).To(Equal(expectedStartTime.Minute()))
+				Expect(startTime.Second()).To(Equal(expectedStartTime.Second()))
+
+				Expect(endTime.Year()).To(Equal(expectedEndTime.Year()))
+				Expect(endTime.Month()).To(Equal(expectedEndTime.Month()))
+				Expect(endTime.Day()).To(Equal(expectedEndTime.Day()))
+				Expect(endTime.Hour()).To(Equal(expectedEndTime.Hour()))
+				Expect(endTime.Minute()).To(Equal(expectedEndTime.Minute()))
+				Expect(endTime.Second()).To(Equal(expectedStartTime.Second()))
+
+			})
+		})
 	})
 })
