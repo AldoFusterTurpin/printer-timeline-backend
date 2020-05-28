@@ -1,4 +1,4 @@
-package openXml_test
+package queryParamsCtrl_test
 
 import (
 	"testing"
@@ -9,5 +9,5 @@ import (
 
 func TestOpenXml(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "OpenXml Suite")
+	RunSpecs(t, "Time Range Suite")
 }
