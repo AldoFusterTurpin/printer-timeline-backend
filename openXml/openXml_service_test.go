@@ -16,7 +16,7 @@ var _ = Describe("OpenXml", func() {
 			It("returns missing time range type error", func() {
 				queryParams := map[string]string{
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringMissingTimeRangeTypeError))
 			})
 		})
@@ -27,7 +27,7 @@ var _ = Describe("OpenXml", func() {
 					"pn" : "L2E27A",
 					"sn": "SG59L1Q005",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringMissingTimeRangeTypeError))
 			})
 		})
@@ -39,7 +39,7 @@ var _ = Describe("OpenXml", func() {
 					"sn": "SG59L1Q005",
 					"time_type": "",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringMissingTimeRangeTypeError))
 			})
 		})
@@ -49,7 +49,7 @@ var _ = Describe("OpenXml", func() {
 				queryParams := map[string]string{
 					"time_type": "always",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedTimeRangeTypeError))
 			})
 		})
@@ -60,7 +60,7 @@ var _ = Describe("OpenXml", func() {
 					"time_type": "relative",
 					"start_time": "1590084529",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringStartTimeAppearsError))
 			})
 		})
@@ -71,7 +71,7 @@ var _ = Describe("OpenXml", func() {
 					"time_type": "relative",
 					"end_time": "1590084529",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringEndTimeAppearsError))
 			})
 		})
@@ -81,7 +81,7 @@ var _ = Describe("OpenXml", func() {
 				queryParams := map[string]string{
 					"time_type": "relative",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringMissingOffsetUnitsError))
 			})
 		})
@@ -92,7 +92,7 @@ var _ = Describe("OpenXml", func() {
 					"time_type": "relative",
 					"offset_units": "days", //days are not supported for now
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedOffsetUnitsError))
 			})
 		})
@@ -103,7 +103,7 @@ var _ = Describe("OpenXml", func() {
 					"time_type": "relative",
 					"offset_units": "minutes",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringMissingOffsetValueError))
 			})
 		})
@@ -115,7 +115,7 @@ var _ = Describe("OpenXml", func() {
 					"offset_units": "seconds",
 					"offset_value": "Golang",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedOffsetValueError))
 			})
 		})
@@ -127,7 +127,7 @@ var _ = Describe("OpenXml", func() {
 					"offset_units": "minutes",
 					"offset_value": "61",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedOffsetValueError))
 			})
 		})
@@ -139,7 +139,7 @@ var _ = Describe("OpenXml", func() {
 					"offset_units": "minutes",
 					"offset_value": "-61",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedOffsetValueError))
 			})
 		})
@@ -151,7 +151,7 @@ var _ = Describe("OpenXml", func() {
 					"offset_units": "minutes",
 					"offset_value": "0",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedOffsetValueError))
 			})
 		})
@@ -163,7 +163,7 @@ var _ = Describe("OpenXml", func() {
 					"offset_units": "minutes",
 					"offset_value": "5",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(BeNil())
 			})
 		})
@@ -175,7 +175,7 @@ var _ = Describe("OpenXml", func() {
 					"offset_units": "seconds",
 					"offset_value": "36001",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedOffsetValueError))
 			})
 		})
@@ -187,7 +187,7 @@ var _ = Describe("OpenXml", func() {
 					"offset_units": "seconds",
 					"offset_value": "-1",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedOffsetValueError))
 			})
 		})
@@ -197,7 +197,7 @@ var _ = Describe("OpenXml", func() {
 				queryParams := map[string]string{
 					"time_type": "absolute",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringMissingStartTimeError))
 			})
 		})
@@ -208,7 +208,7 @@ var _ = Describe("OpenXml", func() {
 					"time_type": "absolute",
 					"start_time": "",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringMissingStartTimeError))
 			})
 		})
@@ -219,7 +219,7 @@ var _ = Describe("OpenXml", func() {
 					"time_type": "absolute",
 					"start_time": "This_is_invalid",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedStartTimeError))
 			})
 		})
@@ -230,7 +230,7 @@ var _ = Describe("OpenXml", func() {
 					"time_type": "absolute",
 					"start_time": "6.6",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedStartTimeError))
 			})
 		})
@@ -242,7 +242,7 @@ var _ = Describe("OpenXml", func() {
 					"time_type":  "absolute",
 					"start_time": nowEpoch,
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringMissingEndTimeError))
 			})
 		})
@@ -255,7 +255,7 @@ var _ = Describe("OpenXml", func() {
 					"start_time": now,
 					"end_time":   "",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringMissingEndTimeError))
 			})
 		})
@@ -268,7 +268,7 @@ var _ = Describe("OpenXml", func() {
 					"start_time": now,
 					"end_time":   "Software",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedEndTimeError))
 			})
 		})
@@ -281,7 +281,7 @@ var _ = Describe("OpenXml", func() {
 					"start_time": now,
 					"end_time":   "159008452.9",
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedEndTimeError))
 			})
 		})
@@ -295,7 +295,7 @@ var _ = Describe("OpenXml", func() {
 					"start_time": start,
 					"end_time":   end,
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringTimeDifferenceTooBig))
 			})
 		})
@@ -309,7 +309,7 @@ var _ = Describe("OpenXml", func() {
 					"start_time": start,
 					"end_time":   end,
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringTimeDifferenceTooBig))
 			})
 		})
@@ -323,7 +323,7 @@ var _ = Describe("OpenXml", func() {
 					"start_time": start,
 					"end_time":   end,
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(BeNil())
 			})
 		})
@@ -337,7 +337,7 @@ var _ = Describe("OpenXml", func() {
 					"start_time": start,
 					"end_time":   end,
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(BeNil())
 			})
 		})
@@ -351,7 +351,7 @@ var _ = Describe("OpenXml", func() {
 					"start_time": start,
 					"end_time":   end,
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringTimeDifferenceTooBig))
 			})
 		})
@@ -365,7 +365,7 @@ var _ = Describe("OpenXml", func() {
 					"start_time": start,
 					"end_time":   end,
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringEndTimePreviousThanStartTime))
 			})
 		})
@@ -379,7 +379,7 @@ var _ = Describe("OpenXml", func() {
 					"start_time": start,
 					"end_time":   end,
 				}
-				_, _, _, err := openXml.PrepareInsightsQueryParameters(queryParams)
+				_, _, _, err := openXml.GetInsightsQueryParams(queryParams)
 				Expect(err).To(Equal(main2.QueryStringUnsupportedTimeRangeTypeError))
 			})
 		})

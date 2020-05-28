@@ -32,48 +32,49 @@ func selectQueryTemplate(productNumber, serialNumber string) (templateString str
 
 
 func createQuery(productNumber, serialNumber string) (query string, err error){
-	templateString := selectQueryTemplate(productNumber, serialNumber)
-	queryTemplate, err := template.New("queryTemplate").Parse(templateString)
+	queryTemplateString := selectQueryTemplate(productNumber, serialNumber)
+
+	queryTemplate, err := template.New("queryTemplate").Parse(queryTemplateString)
 	if err != nil {
 		return
 	}
 
-	mapValues := map[string]interface{}{
+	mapValues := map[string]string{
 		"productNumber": productNumber,
 		"serialNumber":  serialNumber,
 	}
 
-	var queryBuf bytes.Buffer
-	if err = queryTemplate.Execute(&queryBuf, mapValues); err != nil {
+	var queryBuffer bytes.Buffer
+	err = queryTemplate.Execute(&queryBuffer, mapValues)
+	if err != nil {
 		return
 	}
-	return queryBuf.String(), nil
+	return queryBuffer.String(), nil
 }
 
-func PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (queryParams cloudwatch.InsightsQueryParams, err error) {
-	startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(requestQueryParameters)
+func GetInsightsQueryParams(requestQueryParams map[string]string) (insightsQueryParams cloudwatch.InsightsQueryParams, err error) {
+	startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(requestQueryParams)
 	if err != nil {
 		return
 	}
 
-	productNumber, serialNumber, err := queryParamsCtrl.ExtractPrinterInfo(requestQueryParameters);
+	productNumber, serialNumber, err := queryParamsCtrl.ExtractPrinterInfo(requestQueryParams)
 	if err != nil {
 		return
 	}
 
-	query, err := createQuery(productNumber, serialNumber)
-
-	queryParams = cloudwatch.InsightsQueryParams{
-		startTime,
-		endTime,
-		"/aws/lambda/AWSUpload",
-		query,
+	queryToExecute, err := createQuery(productNumber, serialNumber)
+	insightsQueryParams = cloudwatch.InsightsQueryParams{
+		StartTimeEpoch: startTime,
+		EndTimeEpoch:   endTime,
+		LogGroupName:   "/aws/lambda/AWSUpload",
+		Query:          queryToExecute,
 	}
-	return queryParams, nil
+	return insightsQueryParams, nil
 }
 
 func GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs, requestQueryParams map[string]string) (int, *cloudwatchlogs.GetQueryResultsOutput) {
-	insightsQueryParams, err := PrepareInsightsQueryParameters(requestQueryParams)
+	insightsQueryParams, err := GetInsightsQueryParams(requestQueryParams)
 	if err != nil {
 		fmt.Println(err.Error())
 		return http.StatusInternalServerError, nil

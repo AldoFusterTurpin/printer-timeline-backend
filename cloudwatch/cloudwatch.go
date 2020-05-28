@@ -8,15 +8,15 @@ import (
 
 type InsightsQueryParams struct {
 	StartTimeEpoch, EndTimeEpoch int64
-	LogGroupName, QueryString    string
+	LogGroupName, Query          string
 }
 
-func ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs, queryParams InsightsQueryParams) (*cloudwatchlogs.GetQueryResultsOutput, error) {
-	startQueryInput := &cloudwatchlogs.StartQueryInput{
-		StartTime:    aws.Int64(queryParams.StartTimeEpoch),
-		EndTime:      aws.Int64(queryParams.EndTimeEpoch),
-		LogGroupName: aws.String(queryParams.LogGroupName),
-		QueryString:  aws.String(queryParams.QueryString),
+func ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs, insightsQueryParams InsightsQueryParams) (*cloudwatchlogs.GetQueryResultsOutput, error) {
+	startQueryInput := &cloudwatchlogs.StartQueryInput {
+		StartTime:    aws.Int64(insightsQueryParams.StartTimeEpoch),
+		EndTime:      aws.Int64(insightsQueryParams.EndTimeEpoch),
+		LogGroupName: aws.String(insightsQueryParams.LogGroupName),
+		QueryString:  aws.String(insightsQueryParams.Query),
 	}
 
 	startQueryOutput, err := svc.StartQuery(startQueryInput)
