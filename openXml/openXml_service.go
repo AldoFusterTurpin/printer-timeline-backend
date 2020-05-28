@@ -2,24 +2,13 @@ package openXml
 
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/cloudwatch"
-	"bitbucket.org/aldoft/printer-timeline-backend/errors"
-	"bitbucket.org/aldoft/printer-timeline-backend/timeresolver"
+	"bitbucket.org/aldoft/printer-timeline-backend/queryParamsCtrl"
 	"bytes"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"net/http"
 	"text/template"
 )
-
-func ExtractPrinterInfo(queryParameters map[string]string) (productNumber string, serialNumber string, err error) {
-	productNumber = queryParameters["pn"]
-	productNumber = queryParameters["sn"]
-	if productNumber == "" && serialNumber != "" {
-		err = errors.QueryStringPnSn
-		return
-	}
-	return productNumber, serialNumber, nil
-}
 
 func selectQueryTemplate(productNumber, serialNumber string) (templateString string) {
 	if productNumber != "" && serialNumber != "" {
@@ -42,12 +31,12 @@ func selectQueryTemplate(productNumber, serialNumber string) (templateString str
 }
 
 func PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (queryParams cloudwatch.InsightsQueryParams, err error) {
-	startTime, endTime, err := timeresolver.ExtractTimeRange(requestQueryParameters)
+	startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(requestQueryParameters)
 	if err != nil {
 		return
 	}
 
-	productNumber, serialNumber, err := ExtractPrinterInfo(requestQueryParameters);
+	productNumber, serialNumber, err := queryParamsCtrl.ExtractPrinterInfo(requestQueryParameters);
 	if err != nil {
 		return
 	}

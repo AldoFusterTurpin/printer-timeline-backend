@@ -1,4 +1,4 @@
-package timeresolver
+package queryParamsCtrl
 
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/errors"
