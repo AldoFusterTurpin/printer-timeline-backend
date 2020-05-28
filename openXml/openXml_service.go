@@ -30,8 +30,7 @@ func selectQueryTemplate(productNumber, serialNumber string) (templateString str
 								| limit 10000`
 }
 
-
-func createQuery(productNumber, serialNumber string) (query string, err error){
+func createQuery(productNumber, serialNumber string) (query string, err error) {
 	queryTemplateString := selectQueryTemplate(productNumber, serialNumber)
 
 	queryTemplate, err := template.New("queryTemplate").Parse(queryTemplateString)

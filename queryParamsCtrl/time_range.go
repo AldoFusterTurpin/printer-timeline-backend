@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-
 func stringToTime(s string) (time.Time, error) {
 	sec, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
@@ -14,7 +13,6 @@ func stringToTime(s string) (time.Time, error) {
 	}
 	return time.Unix(sec, 0), nil
 }
-
 
 func ExtractTimeRange(queryParameters map[string]string) (startTime time.Time, endTime time.Time, err error) {
 

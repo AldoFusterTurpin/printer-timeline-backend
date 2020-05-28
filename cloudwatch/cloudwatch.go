@@ -12,7 +12,7 @@ type InsightsQueryParams struct {
 }
 
 func ExecuteQuery(svc *cloudwatchlogs.CloudWatchLogs, insightsQueryParams InsightsQueryParams) (*cloudwatchlogs.GetQueryResultsOutput, error) {
-	startQueryInput := &cloudwatchlogs.StartQueryInput {
+	startQueryInput := &cloudwatchlogs.StartQueryInput{
 		StartTime:    aws.Int64(insightsQueryParams.StartTimeEpoch),
 		EndTime:      aws.Int64(insightsQueryParams.EndTimeEpoch),
 		LogGroupName: aws.String(insightsQueryParams.LogGroupName),

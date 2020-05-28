@@ -16,7 +16,7 @@ var _ = Describe("Time range controller", func() {
 			It("returns missing time range type error", func() {
 				queryParams := map[string]string{
 				}
-				 _, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+				_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
 				Expect(err).To(Equal(errors.QueryStringMissingTimeRangeType))
 			})
 		})
@@ -24,10 +24,10 @@ var _ = Describe("Time range controller", func() {
 		Context("Request Query parameters not contain time range type but contain other parameters", func() {
 			It("returns missing time range type error", func() {
 				queryParams := map[string]string{
-					"pn" : "L2E27A",
+					"pn": "L2E27A",
 					"sn": "SG59L1Q005",
 				}
-				 _, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+				_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
 				Expect(err).To(Equal(errors.QueryStringMissingTimeRangeType))
 			})
 		})
@@ -35,11 +35,11 @@ var _ = Describe("Time range controller", func() {
 		Context("Request Query parameters time range type is empty", func() {
 			It("returns missing time range type error", func() {
 				queryParams := map[string]string{
-					"pn" : "L2E27A",
-					"sn": "SG59L1Q005",
+					"pn":        "L2E27A",
+					"sn":        "SG59L1Q005",
 					"time_type": "",
 				}
-				 _, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+				_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
 				Expect(err).To(Equal(errors.QueryStringMissingTimeRangeType))
 			})
 		})
@@ -49,7 +49,7 @@ var _ = Describe("Time range controller", func() {
 				queryParams := map[string]string{
 					"time_type": "always",
 				}
-				 _, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+				_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
 				Expect(err).To(Equal(errors.QueryStringUnsupportedTimeRangeType))
 			})
 		})
@@ -58,7 +58,7 @@ var _ = Describe("Time range controller", func() {
 			Context("and start time is present", func() {
 				It("returns start time should not appear error", func() {
 					queryParams := map[string]string{
-						"time_type": "relative",
+						"time_type":  "relative",
 						"start_time": "1590084529",
 					}
 					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
@@ -70,7 +70,7 @@ var _ = Describe("Time range controller", func() {
 				It("returns end time should not appear error", func() {
 					queryParams := map[string]string{
 						"time_type": "relative",
-						"end_time": "1590084529",
+						"end_time":  "1590084529",
 					}
 					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringEndTimeAppears))
@@ -90,7 +90,7 @@ var _ = Describe("Time range controller", func() {
 			Context("and offset units is unsupported", func() {
 				It("returns unsupported offset units error", func() {
 					queryParams := map[string]string{
-						"time_type": "relative",
+						"time_type":    "relative",
 						"offset_units": "days", //days are not supported for now, just minutes and seconds
 					}
 					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
@@ -101,7 +101,7 @@ var _ = Describe("Time range controller", func() {
 			Context("and offset value is missing", func() {
 				It("returns missing offset value error", func() {
 					queryParams := map[string]string{
-						"time_type": "relative",
+						"time_type":    "relative",
 						"offset_units": "minutes",
 					}
 					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
@@ -112,7 +112,7 @@ var _ = Describe("Time range controller", func() {
 			Context("Request Query parameters time range type and offset_units are ok but offset value is not a number", func() {
 				It("returns unsupported offset value error", func() {
 					queryParams := map[string]string{
-						"time_type": "relative",
+						"time_type":    "relative",
 						"offset_units": "seconds",
 						"offset_value": "Golang",
 					}
@@ -124,7 +124,7 @@ var _ = Describe("Time range controller", func() {
 			Context("Request Query parameters time range type is relative, offset units is minutes but offset value is too big", func() {
 				It("returns unsupported offset value error", func() {
 					queryParams := map[string]string{
-						"time_type": "relative",
+						"time_type":    "relative",
 						"offset_units": "minutes",
 						"offset_value": "61",
 					}
@@ -136,7 +136,7 @@ var _ = Describe("Time range controller", func() {
 			Context("Request Query parameters time range type is relative, offset units is minutes but offset value is negative", func() {
 				It("returns unsupported offset value error", func() {
 					queryParams := map[string]string{
-						"time_type": "relative",
+						"time_type":    "relative",
 						"offset_units": "minutes",
 						"offset_value": "-61",
 					}
@@ -148,7 +148,7 @@ var _ = Describe("Time range controller", func() {
 			Context("Request Query parameters time range type is relative, offset units is minutes but offset value is zero", func() {
 				It("returns unsupported offset value error", func() {
 					queryParams := map[string]string{
-						"time_type": "relative",
+						"time_type":    "relative",
 						"offset_units": "minutes",
 						"offset_value": "0",
 					}
@@ -160,7 +160,7 @@ var _ = Describe("Time range controller", func() {
 			Context("Request Query parameters time range type is relative, offset units is minutes and offset value is ok", func() {
 				It("returns no error", func() {
 					queryParams := map[string]string{
-						"time_type": "relative",
+						"time_type":    "relative",
 						"offset_units": "minutes",
 						"offset_value": "5",
 					}
@@ -172,7 +172,7 @@ var _ = Describe("Time range controller", func() {
 			Context("Request Query parameters time range type is relative, offset units is seconds but offset value is too big", func() {
 				It("returns unsupported offset value error", func() {
 					queryParams := map[string]string{
-						"time_type": "relative",
+						"time_type":    "relative",
 						"offset_units": "seconds",
 						"offset_value": "36001",
 					}
@@ -184,7 +184,7 @@ var _ = Describe("Time range controller", func() {
 			Context("Request Query parameters time range type is relative, offset units is seconds but offset value is negative", func() {
 				It("returns unsupported offset value error", func() {
 					queryParams := map[string]string{
-						"time_type": "relative",
+						"time_type":    "relative",
 						"offset_units": "seconds",
 						"offset_value": "-1",
 					}
@@ -196,9 +196,9 @@ var _ = Describe("Time range controller", func() {
 			Context("and query params ok", func() {
 				It("returns correct startTime and endTime based on query params", func() {
 					queryParams := map[string]string{
-						"time_type":  "relative",
+						"time_type":    "relative",
 						"offset_units": "minutes",
-						"offset_value":   "5",
+						"offset_value": "5",
 					}
 
 					offsetValue, _ := strconv.Atoi(queryParams["offset_value"])
@@ -244,7 +244,7 @@ var _ = Describe("Time range controller", func() {
 			Context("and start time is empty", func() {
 				It("returns missing start time error", func() {
 					queryParams := map[string]string{
-						"time_type": "absolute",
+						"time_type":  "absolute",
 						"start_time": "",
 					}
 					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
@@ -255,7 +255,7 @@ var _ = Describe("Time range controller", func() {
 			Context("and start time has wrong value (is a word)", func() {
 				It("returns unsupported start_time error", func() {
 					queryParams := map[string]string{
-						"time_type": "absolute",
+						"time_type":  "absolute",
 						"start_time": "This_is_invalid",
 					}
 					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
@@ -266,7 +266,7 @@ var _ = Describe("Time range controller", func() {
 			Context("and start time has wrong value (is a string representing a float)", func() {
 				It("returns unsupported start_time error", func() {
 					queryParams := map[string]string{
-						"time_type": "absolute",
+						"time_type":  "absolute",
 						"start_time": "6.6",
 					}
 					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
@@ -327,7 +327,7 @@ var _ = Describe("Time range controller", func() {
 
 			Context("but difference between start time and end time is more than one hour", func() {
 				It("returns query string time difference is too big error", func() {
-					start := strconv.FormatInt(time.Now().Add(-time.Minute * 70).Unix(), 10)
+					start := strconv.FormatInt(time.Now().Add(-time.Minute*70).Unix(), 10)
 					end := strconv.FormatInt(time.Now().Unix(), 10)
 					queryParams := map[string]string{
 						"time_type":  "absolute",
@@ -341,8 +341,8 @@ var _ = Describe("Time range controller", func() {
 
 			Context("but difference between start time and end time is more than one hour", func() {
 				It("returns query string time difference is too big error", func() {
-					start := strconv.FormatInt(time.Now().Add(-time.Hour * 2).Unix(), 10)
-					end := strconv.FormatInt(time.Now().Add(time.Minute * 3).Unix(), 10)
+					start := strconv.FormatInt(time.Now().Add(-time.Hour*2).Unix(), 10)
+					end := strconv.FormatInt(time.Now().Add(time.Minute*3).Unix(), 10)
 					queryParams := map[string]string{
 						"time_type":  "absolute",
 						"start_time": start,
@@ -355,7 +355,7 @@ var _ = Describe("Time range controller", func() {
 
 			Context("and difference between start time and end time is ok", func() {
 				It("returns no error", func() {
-					start := strconv.FormatInt(time.Now().Add(-time.Minute * 30).Unix(), 10)
+					start := strconv.FormatInt(time.Now().Add(-time.Minute*30).Unix(), 10)
 					end := strconv.FormatInt(time.Now().Unix(), 10)
 					queryParams := map[string]string{
 						"time_type":  "absolute",
@@ -369,7 +369,7 @@ var _ = Describe("Time range controller", func() {
 
 			Context("and difference between start time and end time is ok", func() {
 				It("returns no error", func() {
-					start := strconv.FormatInt(time.Now().Add(-time.Minute * 60).Unix(), 10)
+					start := strconv.FormatInt(time.Now().Add(-time.Minute*60).Unix(), 10)
 					end := strconv.FormatInt(time.Now().Unix(), 10)
 					queryParams := map[string]string{
 						"time_type":  "absolute",
@@ -383,7 +383,7 @@ var _ = Describe("Time range controller", func() {
 
 			Context("and difference between start time and end time is too big", func() {
 				It("returns query string time difference is too big error", func() {
-					start := strconv.FormatInt(time.Now().Add(-time.Minute * 61).Unix(), 10)
+					start := strconv.FormatInt(time.Now().Add(-time.Minute*61).Unix(), 10)
 					end := strconv.FormatInt(time.Now().Unix(), 10)
 					queryParams := map[string]string{
 						"time_type":  "absolute",
@@ -398,7 +398,7 @@ var _ = Describe("Time range controller", func() {
 			Context("but end time is previous than start time", func() {
 				It("returns query string end time is previous than start time error", func() {
 					start := strconv.FormatInt(time.Now().Unix(), 10)
-					end := strconv.FormatInt(time.Now().Add(-time.Minute * 20).Unix(), 10)
+					end := strconv.FormatInt(time.Now().Add(-time.Minute*20).Unix(), 10)
 					queryParams := map[string]string{
 						"time_type":  "absolute",
 						"start_time": start,
@@ -413,7 +413,7 @@ var _ = Describe("Time range controller", func() {
 		Context("Request Query parameters time range type is not supported", func() {
 			It("returns unsupported time range type error", func() {
 				start := strconv.FormatInt(time.Now().Unix(), 10)
-				end := strconv.FormatInt(time.Now().Add(-time.Minute * 20).Unix(), 10)
+				end := strconv.FormatInt(time.Now().Add(-time.Minute*20).Unix(), 10)
 				queryParams := map[string]string{
 					"time_type":  "invented_time_type",
 					"start_time": start,
