@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-func extractQueryParameters(c *gin.Context) map[string]string{
+func extractQueryParams(c *gin.Context) map[string]string{
 	return map[string]string {
 		"time_type" : c.Query("time_type"),
 		"offset_units" : c.Query("offset_units"),
@@ -25,7 +25,7 @@ func extractQueryParameters(c *gin.Context) map[string]string{
 
 func OpenXmlHandler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		queryParameters := extractQueryParameters(c)
+		queryParameters := extractQueryParams(c)
 
 		status, response := openXml.GetUploadedOpenXmls(svc, queryParameters)
 		c.JSON(status, response)

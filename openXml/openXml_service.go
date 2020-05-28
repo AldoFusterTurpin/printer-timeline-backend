@@ -3,15 +3,23 @@ package openXml
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/cloudwatch"
 	"bitbucket.org/aldoft/printer-timeline-backend/errors"
+	"bitbucket.org/aldoft/printer-timeline-backend/timeresolver"
 	"bytes"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"net/http"
-	"strconv"
 	"text/template"
-	"time"
 )
 
+func ExtractPrinterInfo(queryParameters map[string]string) (productNumber string, serialNumber string, err error) {
+	productNumber = queryParameters["pn"]
+	productNumber = queryParameters["sn"]
+	if productNumber == "" && serialNumber != "" {
+		err = errors.QueryStringPnSn
+		return
+	}
+	return productNumber, serialNumber, nil
+}
 
 func selectQueryTemplate(productNumber, serialNumber string) (templateString string) {
 	if productNumber != "" && serialNumber != "" {
@@ -33,121 +41,8 @@ func selectQueryTemplate(productNumber, serialNumber string) (templateString str
 								| limit 10000`
 }
 
-func ExtractTimeRange(queryParameters map[string]string) (startTimeEpoch int64, endTimeEpoch int64, err error) {
-
-	timeTypeStr := queryParameters["time_type"]
-	if timeTypeStr == "" {
-		err = errors.QueryStringMissingTimeRangeType
-		return
-	}
-
-	startTimeStr := queryParameters["start_time"]
-	endTimeStr := queryParameters["end_time"]
-	offsetUnits := queryParameters["offset_units"]
-	offsetValue := queryParameters["offset_value"]
-	switch timeTypeStr {
-	case "relative":
-		if startTimeStr != "" {
-			err = errors.QueryStringStartTimeAppears
-			return
-		}
-		if endTimeStr != "" {
-			err = errors.QueryStringEndTimeAppears
-			return
-		}
-		if offsetUnits == "" {
-			err = errors.QueryStringMissingOffsetUnits
-			return
-		}
-		if offsetUnits != "seconds" && offsetUnits != "minutes" {
-			err = errors.QueryStringUnsupportedOffsetUnits
-			return
-		}
-		if offsetValue == "" {
-			err = errors.QueryStringMissingOffsetValue
-			return
-		}
-
-		var offsetValueInt int
-		offsetValueInt, err = strconv.Atoi(offsetValue)
-		if err != nil {
-			err = errors.QueryStringUnsupportedOffsetValue
-			return
-		}
-
-		if offsetUnits == "minutes" && offsetValueInt > 60 {
-			err = errors.QueryStringUnsupportedOffsetValue
-			return
-		}
-		if offsetUnits == "seconds" && offsetValueInt > 3600 {
-			err = errors.QueryStringUnsupportedOffsetValue
-			return
-		}
-		if offsetValueInt < 1 {
-			err = errors.QueryStringUnsupportedOffsetValue
-			return
-		}
-
-		endTimeEpoch = time.Now().Unix()
-
-		var duration time.Duration
-		if offsetUnits == "minutes" {
-			duration = -1 * time.Minute * time.Duration(offsetValueInt)
-		} else if offsetUnits == "seconds" {
-			duration = -1 * time.Second * time.Duration(offsetValueInt)
-		}
-		startTimeEpoch = time.Now().Add(duration).Unix()
-
-	case "absolute":
-		if startTimeStr == "" {
-			err =  errors.QueryStringMissingStartTime
-			return
-		}
-
-		startTimeEpoch, err = strconv.ParseInt(startTimeStr, 10, 64)
-		if err != nil {
-			err = errors.QueryStringUnsupportedStartTime
-			return
-		}
-
-		if endTimeStr == "" {
-			err = errors.QueryStringMissingEndTime
-			return
-		}
-		endTimeEpoch, err = strconv.ParseInt(endTimeStr, 10, 64)
-		if err != nil {
-			err = errors.QueryStringUnsupportedEndTime
-			return
-		}
-
-		diff := time.Unix(endTimeEpoch, 0).Sub(time.Unix(startTimeEpoch, 0))
-		if diff.Minutes() > 60 {
-			err = errors.QueryStringTimeDifferenceTooBig
-			return
-		}
-		if diff.Minutes() < 0 {
-			err = errors.QueryStringEndTimePreviousThanStartTime
-			return
-		}
-	default:
-		err = errors.QueryStringUnsupportedTimeRangeType
-		return
-	}
-	return startTimeEpoch, endTimeEpoch, nil
-}
-
-func ExtractPrinterInfo(queryParameters map[string]string) (productNumber string, serialNumber string, err error) {
-	productNumber = queryParameters["pn"]
-	productNumber = queryParameters["sn"]
-	if productNumber == "" && serialNumber != "" {
-		err = errors.QueryStringPnSn
-		return
-	}
-	return productNumber, serialNumber, nil
-}
-
 func PrepareInsightsQueryParameters(requestQueryParameters map[string]string) (queryParams cloudwatch.InsightsQueryParams, err error) {
-	startTime, endTime, err := ExtractTimeRange(requestQueryParameters)
+	startTime, endTime, err := timeresolver.ExtractTimeRange(requestQueryParameters)
 	if err != nil {
 		return
 	}
