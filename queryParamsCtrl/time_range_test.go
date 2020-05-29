@@ -12,7 +12,7 @@ import (
 var _ = Describe("Time range controller", func() {
 	Describe("Extract Time Range from query parameters", func() {
 
-		Context("Request query parameters not contain any parameter", func() {
+		Context("Request query parameters don't contain any parameter", func() {
 			It("returns missing time range type error", func() {
 				queryParams := map[string]string{
 				}
@@ -21,7 +21,7 @@ var _ = Describe("Time range controller", func() {
 			})
 		})
 
-		Context("Request Query parameters not contain time range type but contain other parameters", func() {
+		Context("Request Query parameters don't contain time range type but contain other parameters", func() {
 			It("returns missing time range type error", func() {
 				queryParams := map[string]string{
 					"pn": "L2E27A",
@@ -44,7 +44,7 @@ var _ = Describe("Time range controller", func() {
 			})
 		})
 
-		Context("Request Query parameters contain time range type but are not 'relative' or 'absolute'", func() {
+		Context("Request Query parameters contain time range type but is not 'relative' or 'absolute'", func() {
 			It("returns query string unsupported time range type error", func() {
 				queryParams := map[string]string{
 					"time_type": "always",
@@ -87,11 +87,11 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			Context("and offset units is unsupported", func() {
+			Context("and offset units is unsupported (days)", func() {
 				It("returns unsupported offset units error", func() {
 					queryParams := map[string]string{
 						"time_type":    "relative",
-						"offset_units": "days", //days are not supported for now, just minutes and seconds
+						"offset_units": "days",
 					}
 					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringUnsupportedOffsetUnits))
@@ -109,7 +109,7 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			Context("Request Query parameters time range type and offset_units are ok but offset value is not a number", func() {
+			Context("and offset_units is ok but offset value is not a number", func() {
 				It("returns unsupported offset value error", func() {
 					queryParams := map[string]string{
 						"time_type":    "relative",
@@ -121,7 +121,7 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			Context("Request Query parameters time range type is relative, offset units is minutes but offset value is too big", func() {
+			Context("and offset units is 'minutes' but offset value is too big", func() {
 				It("returns unsupported offset value error", func() {
 					queryParams := map[string]string{
 						"time_type":    "relative",
@@ -133,7 +133,7 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			Context("Request Query parameters time range type is relative, offset units is minutes but offset value is negative", func() {
+			Context("and offset units is minutes but offset value is negative", func() {
 				It("returns unsupported offset value error", func() {
 					queryParams := map[string]string{
 						"time_type":    "relative",
@@ -145,7 +145,7 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			Context("Request Query parameters time range type is relative, offset units is minutes but offset value is zero", func() {
+			Context("and offset units is minutes but offset value is zero", func() {
 				It("returns unsupported offset value error", func() {
 					queryParams := map[string]string{
 						"time_type":    "relative",
@@ -157,7 +157,7 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			Context("Request Query parameters time range type is relative, offset units is minutes and offset value is ok", func() {
+			Context("and offset units is minutes and offset value is ok", func() {
 				It("returns no error", func() {
 					queryParams := map[string]string{
 						"time_type":    "relative",
@@ -169,7 +169,7 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			Context("Request Query parameters time range type is relative, offset units is seconds but offset value is too big", func() {
+			Context("and offset units is seconds but offset value is too big", func() {
 				It("returns unsupported offset value error", func() {
 					queryParams := map[string]string{
 						"time_type":    "relative",
@@ -181,7 +181,7 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			Context("Request Query parameters time range type is relative, offset units is seconds but offset value is negative", func() {
+			Context("and offset units is seconds but offset value is negative", func() {
 				It("returns unsupported offset value error", func() {
 					queryParams := map[string]string{
 						"time_type":    "relative",
@@ -225,6 +225,40 @@ var _ = Describe("Time range controller", func() {
 					Expect(endTime.Hour()).To(Equal(expectedEndTime.Hour()))
 					Expect(endTime.Minute()).To(Equal(expectedEndTime.Minute()))
 					Expect(endTime.Second()).To(Equal(expectedStartTime.Second()))
+
+				})
+			})
+			Context("and query params ok", func() {
+				It("returns correct startTime and endTime based on query params", func() {
+					queryParams := map[string]string{
+						"time_type":    "relative",
+						"offset_units": "seconds",
+						"offset_value": "30",
+					}
+
+					offsetValue, _ := strconv.Atoi(queryParams["offset_value"])
+					duration := -1 * time.Second * time.Duration(offsetValue)
+
+					expectedEndTime := time.Now()
+					expectedStartTime := expectedEndTime.Add(duration)
+
+					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+
+					Expect(err).To(BeNil())
+
+					Expect(startTime.Year()).To(Equal(expectedStartTime.Year()))
+					Expect(startTime.Month()).To(Equal(expectedStartTime.Month()))
+					Expect(startTime.Day()).To(Equal(expectedStartTime.Day()))
+					Expect(startTime.Hour()).To(Equal(expectedStartTime.Hour()))
+					Expect(startTime.Minute()).To(Equal(expectedStartTime.Minute()))
+					Expect(startTime.Second()).To(Equal(expectedStartTime.Second()))
+
+					Expect(endTime.Year()).To(Equal(expectedEndTime.Year()))
+					Expect(endTime.Month()).To(Equal(expectedEndTime.Month()))
+					Expect(endTime.Day()).To(Equal(expectedEndTime.Day()))
+					Expect(endTime.Hour()).To(Equal(expectedEndTime.Hour()))
+					Expect(endTime.Minute()).To(Equal(expectedEndTime.Minute()))
+					Expect(endTime.Second()).To(Equal(expectedEndTime.Second()))
 
 				})
 			})
