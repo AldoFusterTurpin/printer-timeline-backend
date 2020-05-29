@@ -6,12 +6,14 @@ import (
 	"time"
 )
 
-func stringToTime(s string) (time.Time, error) {
+func stringToUtcTime(s string) (time.Time, error) {
 	sec, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
 		return time.Time{}, err
 	}
-	return time.Unix(sec, 0), nil
+	t := time.Unix(sec, 0)
+	loc, _ := time.LoadLocation("UTC")
+	return t.In(loc), nil
 }
 
 func processOffset(offsetUnits, offsetValue string) (startTime time.Time, endTime time.Time, err error) {
@@ -72,7 +74,7 @@ func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Ti
 		return time.Time{}, time.Time{}, errors.QueryStringMissingStartTime
 	}
 
-	startTime, err = stringToTime(startTimeEpoch)
+	startTime, err = stringToUtcTime(startTimeEpoch)
 	if err != nil {
 		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedStartTime
 	}
@@ -80,7 +82,7 @@ func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Ti
 	if endTimeEpoch == "" {
 		return time.Time{}, time.Time{}, errors.QueryStringMissingEndTime
 	}
-	endTime, err = stringToTime(endTimeEpoch)
+	endTime, err = stringToUtcTime(endTimeEpoch)
 	if err != nil {
 		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedEndTime
 	}

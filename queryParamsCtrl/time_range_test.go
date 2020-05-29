@@ -3,6 +3,7 @@ package queryParamsCtrl_test
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/errors"
 	"bitbucket.org/aldoft/printer-timeline-backend/queryParamsCtrl"
+	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"strconv"
@@ -228,6 +229,79 @@ var _ = Describe("Time range controller", func() {
 
 				})
 			})
+
+			Context("and query params ok", func() {
+				It("returns correct startTime and endTime based on query params", func() {
+					queryParams := map[string]string{
+						"time_type":    "relative",
+						"offset_units": "minutes",
+						"offset_value": "45",
+					}
+
+					offsetValue, _ := strconv.Atoi(queryParams["offset_value"])
+
+					duration := -1 * time.Minute * time.Duration(offsetValue)
+
+					expectedEndTime := time.Now()
+					expectedStartTime := expectedEndTime.Add(duration)
+
+					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+
+					Expect(err).To(BeNil())
+
+					Expect(startTime.Year()).To(Equal(expectedStartTime.Year()))
+					Expect(startTime.Month()).To(Equal(expectedStartTime.Month()))
+					Expect(startTime.Day()).To(Equal(expectedStartTime.Day()))
+					Expect(startTime.Hour()).To(Equal(expectedStartTime.Hour()))
+					Expect(startTime.Minute()).To(Equal(expectedStartTime.Minute()))
+					Expect(startTime.Second()).To(Equal(expectedStartTime.Second()))
+
+					Expect(endTime.Year()).To(Equal(expectedEndTime.Year()))
+					Expect(endTime.Month()).To(Equal(expectedEndTime.Month()))
+					Expect(endTime.Day()).To(Equal(expectedEndTime.Day()))
+					Expect(endTime.Hour()).To(Equal(expectedEndTime.Hour()))
+					Expect(endTime.Minute()).To(Equal(expectedEndTime.Minute()))
+					Expect(endTime.Second()).To(Equal(expectedStartTime.Second()))
+
+				})
+			})
+
+			Context("and query params ok", func() {
+				It("returns correct startTime and endTime based on query params", func() {
+					queryParams := map[string]string{
+						"time_type":    "relative",
+						"offset_units": "minutes",
+						"offset_value": "27",
+					}
+
+					offsetValue, _ := strconv.Atoi(queryParams["offset_value"])
+
+					duration := -1 * time.Minute * time.Duration(offsetValue)
+
+					expectedEndTime := time.Now()
+					expectedStartTime := expectedEndTime.Add(duration)
+
+					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+
+					Expect(err).To(BeNil())
+
+					Expect(startTime.Year()).To(Equal(expectedStartTime.Year()))
+					Expect(startTime.Month()).To(Equal(expectedStartTime.Month()))
+					Expect(startTime.Day()).To(Equal(expectedStartTime.Day()))
+					Expect(startTime.Hour()).To(Equal(expectedStartTime.Hour()))
+					Expect(startTime.Minute()).To(Equal(expectedStartTime.Minute()))
+					Expect(startTime.Second()).To(Equal(expectedStartTime.Second()))
+
+					Expect(endTime.Year()).To(Equal(expectedEndTime.Year()))
+					Expect(endTime.Month()).To(Equal(expectedEndTime.Month()))
+					Expect(endTime.Day()).To(Equal(expectedEndTime.Day()))
+					Expect(endTime.Hour()).To(Equal(expectedEndTime.Hour()))
+					Expect(endTime.Minute()).To(Equal(expectedEndTime.Minute()))
+					Expect(endTime.Second()).To(Equal(expectedStartTime.Second()))
+
+				})
+			})
+
 			Context("and query params ok", func() {
 				It("returns correct startTime and endTime based on query params", func() {
 					queryParams := map[string]string{
@@ -262,9 +336,44 @@ var _ = Describe("Time range controller", func() {
 
 				})
 			})
+
+			Context("and query params ok", func() {
+				It("returns correct startTime and endTime based on query params", func() {
+					queryParams := map[string]string{
+						"time_type":    "relative",
+						"offset_units": "seconds",
+						"offset_value": "50",
+					}
+
+					offsetValue, _ := strconv.Atoi(queryParams["offset_value"])
+					duration := -1 * time.Second * time.Duration(offsetValue)
+
+					expectedEndTime := time.Now()
+					expectedStartTime := expectedEndTime.Add(duration)
+
+					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+
+					Expect(err).To(BeNil())
+
+					Expect(startTime.Year()).To(Equal(expectedStartTime.Year()))
+					Expect(startTime.Month()).To(Equal(expectedStartTime.Month()))
+					Expect(startTime.Day()).To(Equal(expectedStartTime.Day()))
+					Expect(startTime.Hour()).To(Equal(expectedStartTime.Hour()))
+					Expect(startTime.Minute()).To(Equal(expectedStartTime.Minute()))
+					Expect(startTime.Second()).To(Equal(expectedStartTime.Second()))
+
+					Expect(endTime.Year()).To(Equal(expectedEndTime.Year()))
+					Expect(endTime.Month()).To(Equal(expectedEndTime.Month()))
+					Expect(endTime.Day()).To(Equal(expectedEndTime.Day()))
+					Expect(endTime.Hour()).To(Equal(expectedEndTime.Hour()))
+					Expect(endTime.Minute()).To(Equal(expectedEndTime.Minute()))
+					Expect(endTime.Second()).To(Equal(expectedEndTime.Second()))
+
+				})
+			})
 		})
 
-		Context("When time range is absolute", func() {
+		Context("When time range is absolute (in UTC)", func() {
 			Context("and start time is not present", func() {
 				It("returns missing start time error", func() {
 					queryParams := map[string]string{
@@ -308,7 +417,7 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			Context("Request Query parameters time range type is absolute, start time is ok but end time is missing", func() {
+			Context("and start time is ok but end time is missing", func() {
 				It("returns missing end time error", func() {
 					nowEpoch := strconv.FormatInt(time.Now().Unix(), 10)
 					queryParams := map[string]string{
@@ -320,7 +429,7 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			Context("Request Query parameters time range type is absolute, start time is ok but end time is empty", func() {
+			Context("and start time is ok but end time is empty", func() {
 				It("returns missing end time error", func() {
 					now := strconv.FormatInt(time.Now().Unix(), 10)
 					queryParams := map[string]string{
@@ -333,7 +442,7 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			Context("Request Query parameters time range type is absolute, start time is ok but end time has wrong value (is a word)", func() {
+			Context("and start time is ok but end time has wrong value (is a word)", func() {
 				It("returns unsupported end time error", func() {
 					now := strconv.FormatInt(time.Now().Unix(), 10)
 					queryParams := map[string]string{
@@ -346,7 +455,7 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			Context("Request Query parameters time range type is absolute, start time is ok but end time has wrong value (is a float)", func() {
+			Context("and start time is ok but end time has wrong value (is a float)", func() {
 				It("returns unsupported end time error", func() {
 					now := strconv.FormatInt(time.Now().Unix(), 10)
 					queryParams := map[string]string{
@@ -387,6 +496,18 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
+			Context("but difference between start time is ok", func() {
+				It("returns no error", func() {
+					queryParams := map[string]string{
+						"time_type":  "absolute",
+						"start_time": "1590753903",
+						"end_time":   "1590755043",
+					}
+					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					Expect(err).To(BeNil())
+				})
+			})
+
 			Context("and difference between start time and end time is ok", func() {
 				It("returns no error", func() {
 					start := strconv.FormatInt(time.Now().Add(-time.Minute*30).Unix(), 10)
@@ -412,6 +533,84 @@ var _ = Describe("Time range controller", func() {
 					}
 					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
 					Expect(err).To(BeNil())
+				})
+			})
+
+			Context("and difference between start time and end time is ok (30 min)", func() {
+				It("returns no error", func() {
+					queryParams := map[string]string{
+						"time_type":  "absolute",
+						"start_time": "1590753642",
+						"end_time":   "1590755442",
+					}
+					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					Expect(err).To(BeNil())
+				})
+			})
+
+			Context("and difference between start time and end time is ok (1 hour)", func() {
+				It("returns no error", func() {
+					queryParams := map[string]string{
+						"time_type":  "absolute",
+						"start_time": "1590751918",
+						"end_time":   "1590755518",
+					}
+					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					Expect(err).To(BeNil())
+				})
+			})
+
+			//TODO add more tests like this one
+			Context("and difference between start time and end time is ok (1 hour)", func() {
+				It("returns no error and correct start_time and end_time", func() {
+					queryParams := map[string]string{
+						"time_type":  "absolute",
+						"start_time": "1590751918",
+						"end_time":   "1590755518",
+					}
+					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+
+					fmt.Print(startTime.Location())
+
+					Expect(err).To(BeNil())
+
+					Expect(startTime.Year()).To(Equal(2020))
+					Expect(startTime.Month().String()).To(Equal("May"))
+					Expect(startTime.Day()).To(Equal(29))
+					Expect(startTime.Hour()).To(Equal(11))
+					Expect(startTime.Minute()).To(Equal(31))
+					Expect(startTime.Second()).To(Equal(58))
+
+					Expect(endTime.Year()).To(Equal(2020))
+					Expect(endTime.Month().String()).To(Equal("May"))
+					Expect(endTime.Day()).To(Equal(29))
+					Expect(endTime.Hour()).To(Equal(12))
+					Expect(endTime.Minute()).To(Equal(31))
+					Expect(endTime.Second()).To(Equal(58))
+				})
+			})
+
+			Context("but difference between start time is more than one hour", func() {
+				It("returns query string time difference is too big error", func() {
+					queryParams := map[string]string{
+						"time_type":  "absolute",
+						"start_time": "1590751203",
+						"end_time":   "1590755043",
+					}
+					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					Expect(err).To(Equal(errors.QueryStringTimeDifferenceTooBig))
+				})
+			})
+
+			Context("but difference between start time is more than one day", func() {
+				It("returns query string time difference is too big error", func() {
+					queryParams := map[string]string{
+						"time_type":  "absolute",
+						"start_time": "1589282403",
+						"end_time":   "1590755043",
+					}
+					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					Expect(err).To(Equal(errors.QueryStringTimeDifferenceTooBig))
 				})
 			})
 
