@@ -3,7 +3,6 @@ package queryParamsCtrl_test
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/errors"
 	"bitbucket.org/aldoft/printer-timeline-backend/queryParamsCtrl"
-	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"strconv"
@@ -13,7 +12,7 @@ import (
 var _ = Describe("Time range controller", func() {
 	Describe("Extract Time Range from query parameters", func() {
 
-		Context("Request query parameters don't contain any parameter", func() {
+		Context("Request query parameters don't contains any parameter", func() {
 			It("returns missing time range type error", func() {
 				queryParams := map[string]string{
 				}
@@ -22,7 +21,7 @@ var _ = Describe("Time range controller", func() {
 			})
 		})
 
-		Context("Request Query parameters don't contain time range type but contain other parameters", func() {
+		Context("Request Query parameters don't contain time range type but contains other parameters", func() {
 			It("returns missing time range type error", func() {
 				queryParams := map[string]string{
 					"pn": "L2E27A",
@@ -49,6 +48,20 @@ var _ = Describe("Time range controller", func() {
 			It("returns query string unsupported time range type error", func() {
 				queryParams := map[string]string{
 					"time_type": "always",
+				}
+				_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+				Expect(err).To(Equal(errors.QueryStringUnsupportedTimeRangeType))
+			})
+		})
+
+		Context("Request Query parameters time range type is not supported", func() {
+			It("returns unsupported time range type error", func() {
+				start := strconv.FormatInt(time.Now().Unix(), 10)
+				end := strconv.FormatInt(time.Now().Add(-time.Minute*20).Unix(), 10)
+				queryParams := map[string]string{
+					"time_type":  "invented_time_type",
+					"start_time": start,
+					"end_time":   end,
 				}
 				_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
 				Expect(err).To(Equal(errors.QueryStringUnsupportedTimeRangeType))
@@ -560,7 +573,6 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
-			//TODO add more tests like this one
 			Context("and difference between start time and end time is ok (1 hour)", func() {
 				It("returns no error and correct start_time and end_time", func() {
 					queryParams := map[string]string{
@@ -569,8 +581,6 @@ var _ = Describe("Time range controller", func() {
 						"end_time":   "1590755518",
 					}
 					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
-
-					fmt.Print(startTime.Location())
 
 					Expect(err).To(BeNil())
 
@@ -587,6 +597,60 @@ var _ = Describe("Time range controller", func() {
 					Expect(endTime.Hour()).To(Equal(12))
 					Expect(endTime.Minute()).To(Equal(31))
 					Expect(endTime.Second()).To(Equal(58))
+				})
+			})
+
+			Context("and difference between start time and end time is ok (30 min)", func() {
+				It("returns no error and correct start_time and end_time", func() {
+					queryParams := map[string]string{
+						"time_type":  "absolute",
+						"start_time": "1589968858",
+						"end_time":   "1589970658",
+					}
+					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+
+					Expect(err).To(BeNil())
+
+					Expect(startTime.Year()).To(Equal(2020))
+					Expect(startTime.Month().String()).To(Equal("May"))
+					Expect(startTime.Day()).To(Equal(20))
+					Expect(startTime.Hour()).To(Equal(10))
+					Expect(startTime.Minute()).To(Equal(0))
+					Expect(startTime.Second()).To(Equal(58))
+
+					Expect(endTime.Year()).To(Equal(2020))
+					Expect(endTime.Month().String()).To(Equal("May"))
+					Expect(endTime.Day()).To(Equal(20))
+					Expect(endTime.Hour()).To(Equal(10))
+					Expect(endTime.Minute()).To(Equal(30))
+					Expect(endTime.Second()).To(Equal(58))
+				})
+			})
+
+			Context("and difference between start time and end time is ok (20 seconds)", func() {
+				It("returns no error and correct start_time and end_time", func() {
+					queryParams := map[string]string{
+						"time_type":  "absolute",
+						"start_time": "1578215700",
+						"end_time":   "1578215720",
+					}
+					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+
+					Expect(err).To(BeNil())
+
+					Expect(startTime.Year()).To(Equal(2020))
+					Expect(startTime.Month().String()).To(Equal("January"))
+					Expect(startTime.Day()).To(Equal(5))
+					Expect(startTime.Hour()).To(Equal(9))
+					Expect(startTime.Minute()).To(Equal(15))
+					Expect(startTime.Second()).To(Equal(00))
+
+					Expect(endTime.Year()).To(Equal(2020))
+					Expect(endTime.Month().String()).To(Equal("January"))
+					Expect(endTime.Day()).To(Equal(5))
+					Expect(endTime.Hour()).To(Equal(9))
+					Expect(endTime.Minute()).To(Equal(15))
+					Expect(endTime.Second()).To(Equal(20))
 				})
 			})
 
@@ -641,20 +705,31 @@ var _ = Describe("Time range controller", func() {
 					Expect(err).To(Equal(errors.QueryStringEndTimePreviousThanStartTime))
 				})
 			})
-		})
 
-		Context("Request Query parameters time range type is not supported", func() {
-			It("returns unsupported time range type error", func() {
-				start := strconv.FormatInt(time.Now().Unix(), 10)
-				end := strconv.FormatInt(time.Now().Add(-time.Minute*20).Unix(), 10)
-				queryParams := map[string]string{
-					"time_type":  "invented_time_type",
-					"start_time": start,
-					"end_time":   end,
-				}
-				_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
-				Expect(err).To(Equal(errors.QueryStringUnsupportedTimeRangeType))
+			Context("but end time is previous than start time", func() {
+				It("returns query string end time is previous than start time error", func() {
+					queryParams := map[string]string{
+						"time_type":  "absolute",
+						"start_time": "1590766655",
+						"end_time":   "1590766643",
+					}
+					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					Expect(err).To(Equal(errors.QueryStringEndTimePreviousThanStartTime))
+				})
+			})
+
+			Context("but end time is previous than start time", func() {
+				It("returns query string end time is previous than start time error", func() {
+					queryParams := map[string]string{
+						"time_type":  "absolute",
+						"start_time": "1590766681",
+						"end_time":   "1590680281",
+					}
+					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					Expect(err).To(Equal(errors.QueryStringEndTimePreviousThanStartTime))
+				})
 			})
 		})
+
 	})
 })
