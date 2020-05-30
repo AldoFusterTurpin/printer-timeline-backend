@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var _ = Describe("Time range controller", func() {
+var _ = Describe("Query Parameters controller", func() {
 	Describe("Extract Time Range from query parameters", func() {
 
 		Context("Request query parameters don't contains any parameter", func() {
@@ -627,6 +627,33 @@ var _ = Describe("Time range controller", func() {
 				})
 			})
 
+			Context("and difference between start time and end time is ok (45 min)", func() {
+				It("returns no error and correct start_time and end_time", func() {
+					queryParams := map[string]string{
+						"time_type":  "absolute",
+						"start_time": "1590825058",
+						"end_time":   "1590827758",
+					}
+					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+
+					Expect(err).To(BeNil())
+
+					Expect(startTime.Year()).To(Equal(2020))
+					Expect(startTime.Month().String()).To(Equal("May"))
+					Expect(startTime.Day()).To(Equal(30))
+					Expect(startTime.Hour()).To(Equal(7))
+					Expect(startTime.Minute()).To(Equal(50))
+					Expect(startTime.Second()).To(Equal(58))
+
+					Expect(endTime.Year()).To(Equal(2020))
+					Expect(endTime.Month().String()).To(Equal("May"))
+					Expect(endTime.Day()).To(Equal(30))
+					Expect(endTime.Hour()).To(Equal(8))
+					Expect(endTime.Minute()).To(Equal(35))
+					Expect(endTime.Second()).To(Equal(58))
+				})
+			})
+
 			Context("and difference between start time and end time is ok (20 seconds)", func() {
 				It("returns no error and correct start_time and end_time", func() {
 					queryParams := map[string]string{
@@ -732,4 +759,108 @@ var _ = Describe("Time range controller", func() {
 		})
 
 	})
+
+	Describe("Extract Printer number and Serial number from query parameters", func() {
+		Context("When neither Product number nor Serial number is present in query parameters", func() {
+			It("returns no error", func() {
+				queryParams := map[string]string{
+				}
+				_, _, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+
+				Expect(err).To(BeNil())
+
+			})
+		})
+
+		Context("When Product number is present but Serial Number is missing", func() {
+			It("returns no error", func() {
+				queryParams := map[string]string{
+					"pn": "CZ056A",
+				}
+				_, _, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+
+				Expect(err).To(BeNil())
+
+			})
+		})
+
+		Context("When Serial number is present but Product number is missing", func() {
+			It("returns no error and correct Pn and Sn", func() {
+				queryParams := map[string]string{
+					"sn": "SG4491P001",
+				}
+				_, _, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+
+				Expect(err).To(Equal(errors.QueryStringPnSn))
+
+			})
+		})
+
+		Context("When Serial number is present but Product number is missing", func() {
+			It("returns no error and correct Pn and Sn", func() {
+				queryParams := map[string]string{
+					"pn": "CZ056A",
+					"sn": "SG4491P001",
+				}
+				productNumber, serialNumber, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+
+				Expect(productNumber).To(Equal("CZ056A"))
+				Expect(serialNumber).To(Equal("SG4491P001"))
+				Expect(err).To(BeNil())
+
+			})
+		})
+	})
+
+	Describe("Extract Printer number and Serial number from query parameters", func() {
+		Context("When neither Product number nor Serial number is present in query parameters", func() {
+			It("returns no error", func() {
+				queryParams := map[string]string{
+				}
+				_, _, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+
+				Expect(err).To(BeNil())
+
+			})
+		})
+
+		Context("When Product number is present but Serial Number is missing", func() {
+			It("returns no error", func() {
+				queryParams := map[string]string{
+					"pn": "CZ056A",
+				}
+				_, _, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+
+				Expect(err).To(BeNil())
+
+			})
+		})
+
+		Context("When Serial number is present but Product number is missing", func() {
+			It("returns no error and correct Pn and Sn", func() {
+				queryParams := map[string]string{
+					"sn": "SG4491P001",
+				}
+				_, _, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+
+				Expect(err).To(Equal(errors.QueryStringPnSn))
+
+			})
+		})
+
+		Context("When Serial number is present but Product number is missing", func() {
+			It("returns no error and correct Pn and Sn", func() {
+				queryParams := map[string]string{
+					"pn": "CZ056A",
+					"sn": "SG4491P001",
+				}
+				productNumber, serialNumber, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+
+				Expect(productNumber).To(Equal("CZ056A"))
+				Expect(serialNumber).To(Equal("SG4491P001"))
+				Expect(err).To(BeNil())
+			})
+		})
+	})
+
 })

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func stringToUtcTime(s string) (time.Time, error) {
+func stringToUTCTime(s string) (time.Time, error) {
 	sec, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
 		return time.Time{}, err
@@ -74,7 +74,7 @@ func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Ti
 		return time.Time{}, time.Time{}, errors.QueryStringMissingStartTime
 	}
 
-	startTime, err = stringToUtcTime(startTimeEpoch)
+	startTime, err = stringToUTCTime(startTimeEpoch)
 	if err != nil {
 		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedStartTime
 	}
@@ -82,7 +82,7 @@ func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Ti
 	if endTimeEpoch == "" {
 		return time.Time{}, time.Time{}, errors.QueryStringMissingEndTime
 	}
-	endTime, err = stringToUtcTime(endTimeEpoch)
+	endTime, err = stringToUTCTime(endTimeEpoch)
 	if err != nil {
 		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedEndTime
 	}

@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestOpenXml(t *testing.T) {
+func TestQueryParamsCtrl(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Time Range Suite")
+	RunSpecs(t, "Query Params Ctrl Suite")
 }
