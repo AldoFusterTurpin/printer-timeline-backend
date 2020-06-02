@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func stringToUTCTime(s string) (time.Time, error) {
+func stringEpochToUTCTime(s string) (time.Time, error) {
 	sec, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
 		return time.Time{}, err
@@ -47,7 +47,7 @@ func processOffset(offsetUnits, offsetValue string) (startTime time.Time, endTim
 	endTime = time.Now()
 	durationOffset := duration * time.Duration(offsetValueInt)
 	startTime = endTime.Add(-durationOffset)
-	return startTime, endTime, nil
+	return startTime.UTC(), endTime.UTC(), nil
 }
 
 func processRelativeTime(startTimeEpoch, endTimeEpoch, offsetUnits, offsetValue string) (startTime time.Time, endTime time.Time, err error) {
@@ -74,7 +74,7 @@ func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Ti
 		return time.Time{}, time.Time{}, errors.QueryStringMissingStartTime
 	}
 
-	startTime, err = stringToUTCTime(startTimeEpoch)
+	startTime, err = stringEpochToUTCTime(startTimeEpoch)
 	if err != nil {
 		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedStartTime
 	}
@@ -82,7 +82,7 @@ func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Ti
 	if endTimeEpoch == "" {
 		return time.Time{}, time.Time{}, errors.QueryStringMissingEndTime
 	}
-	endTime, err = stringToUTCTime(endTimeEpoch)
+	endTime, err = stringEpochToUTCTime(endTimeEpoch)
 	if err != nil {
 		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedEndTime
 	}

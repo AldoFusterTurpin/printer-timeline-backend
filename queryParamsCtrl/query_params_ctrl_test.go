@@ -219,7 +219,7 @@ var _ = Describe("Query Parameters controller", func() {
 
 					duration := -1 * time.Minute * time.Duration(offsetValue)
 
-					expectedEndTime := time.Now()
+					expectedEndTime := time.Now().UTC()
 					expectedStartTime := expectedEndTime.Add(duration)
 
 					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
@@ -255,7 +255,7 @@ var _ = Describe("Query Parameters controller", func() {
 
 					duration := -1 * time.Minute * time.Duration(offsetValue)
 
-					expectedEndTime := time.Now()
+					expectedEndTime := time.Now().UTC()
 					expectedStartTime := expectedEndTime.Add(duration)
 
 					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
@@ -291,7 +291,7 @@ var _ = Describe("Query Parameters controller", func() {
 
 					duration := -1 * time.Minute * time.Duration(offsetValue)
 
-					expectedEndTime := time.Now()
+					expectedEndTime := time.Now().UTC()
 					expectedStartTime := expectedEndTime.Add(duration)
 
 					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
@@ -326,7 +326,7 @@ var _ = Describe("Query Parameters controller", func() {
 					offsetValue, _ := strconv.Atoi(queryParams["offset_value"])
 					duration := -1 * time.Second * time.Duration(offsetValue)
 
-					expectedEndTime := time.Now()
+					expectedEndTime := time.Now().UTC()
 					expectedStartTime := expectedEndTime.Add(duration)
 
 					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
@@ -361,7 +361,7 @@ var _ = Describe("Query Parameters controller", func() {
 					offsetValue, _ := strconv.Atoi(queryParams["offset_value"])
 					duration := -1 * time.Second * time.Duration(offsetValue)
 
-					expectedEndTime := time.Now()
+					expectedEndTime := time.Now().UTC()
 					expectedStartTime := expectedEndTime.Add(duration)
 
 					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
