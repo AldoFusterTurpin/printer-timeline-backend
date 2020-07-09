@@ -1,16 +1,22 @@
 package openXml
 
 import (
+	"bytes"
+	"text/template"
+
 	"bitbucket.org/aldoft/printer-timeline-backend/cloudwatch"
 	"bitbucket.org/aldoft/printer-timeline-backend/queryParamsCtrl"
-	"bytes"
-	"fmt"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"net/http"
-	"text/template"
 )
 
-func selectQueryTemplate(productNumber, serialNumber string) (templateString string) {
+type OpenXmlsFetcher interface {
+	GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs, requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error)
+}
+
+type OpenXmlsFetcherImpl struct {
+}
+
+func (openXmlsFetcherImpl OpenXmlsFetcherImpl) selectQueryTemplate(productNumber, serialNumber string) (templateString string) {
 	if productNumber != "" && serialNumber != "" {
 		return `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date
 								| filter ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date) and fields.ProductNumber="{{.productNumber}}" and fields.SerialNumber="{{.serialNumber}}"
@@ -30,8 +36,8 @@ func selectQueryTemplate(productNumber, serialNumber string) (templateString str
 								| limit 10000`
 }
 
-func createQuery(productNumber, serialNumber string) (query string, err error) {
-	queryTemplateString := selectQueryTemplate(productNumber, serialNumber)
+func (openXmlsFetcherImpl OpenXmlsFetcherImpl) createQuery(productNumber, serialNumber string) (query string, err error) {
+	queryTemplateString := openXmlsFetcherImpl.selectQueryTemplate(productNumber, serialNumber)
 
 	queryTemplate, err := template.New("queryTemplate").Parse(queryTemplateString)
 	if err != nil {
@@ -51,7 +57,7 @@ func createQuery(productNumber, serialNumber string) (query string, err error) {
 	return queryBuffer.String(), nil
 }
 
-func GetInsightsQueryParams(requestQueryParams map[string]string) (insightsQueryParams cloudwatch.InsightsQueryParams, err error) {
+func (openXmlsFetcherImpl OpenXmlsFetcherImpl) getInsightsQueryParams(requestQueryParams map[string]string) (insightsQueryParams cloudwatch.InsightsQueryParams, err error) {
 	startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(requestQueryParams)
 	if err != nil {
 		return
@@ -62,7 +68,7 @@ func GetInsightsQueryParams(requestQueryParams map[string]string) (insightsQuery
 		return
 	}
 
-	queryToExecute, err := createQuery(productNumber, serialNumber)
+	queryToExecute, err := openXmlsFetcherImpl.createQuery(productNumber, serialNumber)
 	insightsQueryParams = cloudwatch.InsightsQueryParams{
 		StartTimeEpoch: startTime.Unix(),
 		EndTimeEpoch:   endTime.Unix(),
@@ -72,18 +78,15 @@ func GetInsightsQueryParams(requestQueryParams map[string]string) (insightsQuery
 	return insightsQueryParams, nil
 }
 
-func GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs, requestQueryParams map[string]string) (int, *cloudwatchlogs.GetQueryResultsOutput) {
-	insightsQueryParams, err := GetInsightsQueryParams(requestQueryParams)
+func (openXmlsFetcherImpl OpenXmlsFetcherImpl) GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs, requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error) {
+	insightsQueryParams, err := openXmlsFetcherImpl.getInsightsQueryParams(requestQueryParams)
 	if err != nil {
-		fmt.Println(err.Error())
-		return http.StatusInternalServerError, nil
+		return nil, err
 	}
 
 	result, err := cloudwatch.ExecuteQuery(svc, insightsQueryParams)
 	if err != nil {
-		fmt.Println(err.Error())
-		return http.StatusInternalServerError, nil
+		return nil, err
 	}
-
-	return http.StatusOK, result
+	return result, nil
 }
