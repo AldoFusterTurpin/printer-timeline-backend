@@ -26,14 +26,11 @@ func extractQueryParams(c *gin.Context) map[string]string {
 	}
 }
 
-func OpenXmlHandler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
+func OpenXmlHandler(xmlsFetcher openXml.OpenXmlsFetcher) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		queryParameters := extractQueryParams(c)
 
-		//response, error := ... TODO THANKS ADOLFO
-		openXmlsFetcher := openXml.OpenXmlsFetcherImpl{}
-
-		result, err := openXmlsFetcher.GetUploadedOpenXmls(svc, queryParameters)
+		result, err := xmlsFetcher.GetUploadedOpenXmls(queryParameters)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, result)
 		} else {
@@ -42,10 +39,12 @@ func OpenXmlHandler(svc *cloudwatchlogs.CloudWatchLogs) gin.HandlerFunc {
 	}
 }
 
-func initRouter(svc *cloudwatchlogs.CloudWatchLogs) *gin.Engine {
+func initRouter(xmlsFetcher openXml.OpenXmlsFetcher) *gin.Engine {
 	router := gin.Default()
 	router.Use(cors.Default())
-	router.GET("api/open_xml", OpenXmlHandler(svc))
+
+	router.GET("api/open_xml", OpenXmlHandler(xmlsFetcher))
+
 	return router
 }
 
@@ -66,8 +65,9 @@ func main() {
 	}
 
 	svc := cloudwatchlogs.New(sess)
+	xmlsFetcher := openXml.NewOpenXmlsFetcherImpl(svc)
 
-	router := initRouter(svc)
+	router := initRouter(xmlsFetcher)
 
 	if err = router.Run(); err != nil {
 		fmt.Println(err.Error())

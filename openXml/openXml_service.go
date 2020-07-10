@@ -10,10 +10,15 @@ import (
 )
 
 type OpenXmlsFetcher interface {
-	GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs, requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error)
+	GetUploadedOpenXmls(requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error)
 }
 
 type OpenXmlsFetcherImpl struct {
+	svc *cloudwatchlogs.CloudWatchLogs
+}
+
+func NewOpenXmlsFetcherImpl(svc *cloudwatchlogs.CloudWatchLogs) OpenXmlsFetcherImpl {
+	return OpenXmlsFetcherImpl{svc}
 }
 
 func (openXmlsFetcherImpl OpenXmlsFetcherImpl) selectQueryTemplate(productNumber, serialNumber string) (templateString string) {
@@ -78,13 +83,13 @@ func (openXmlsFetcherImpl OpenXmlsFetcherImpl) getInsightsQueryParams(requestQue
 	return insightsQueryParams, nil
 }
 
-func (openXmlsFetcherImpl OpenXmlsFetcherImpl) GetUploadedOpenXmls(svc *cloudwatchlogs.CloudWatchLogs, requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error) {
+func (openXmlsFetcherImpl OpenXmlsFetcherImpl) GetUploadedOpenXmls(requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error) {
 	insightsQueryParams, err := openXmlsFetcherImpl.getInsightsQueryParams(requestQueryParams)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := cloudwatch.ExecuteQuery(svc, insightsQueryParams)
+	result, err := cloudwatch.ExecuteQuery(openXmlsFetcherImpl.svc, insightsQueryParams)
 	if err != nil {
 		return nil, err
 	}
