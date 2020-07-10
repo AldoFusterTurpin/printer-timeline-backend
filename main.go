@@ -48,29 +48,37 @@ func initRouter(xmlsFetcher openXml.OpenXmlsFetcher) *gin.Engine {
 	return router
 }
 
-func main() {
-	awsRegion, ok := os.LookupEnv("AWS_REGION")
+func newCloudWatchService() (*cloudwatchlogs.CloudWatchLogs, error) {
+	envVarName := "AWS_REGION"
+
+	awsRegion, ok := os.LookupEnv(envVarName)
 	if !ok {
-		fmt.Println(errors.New("could not load BUCKET_REGION env var"))
-		return
+		return nil, errors.New("could not load " + envVarName + " environment variable")
 	}
 
-	var err error
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion)},
 	)
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		return nil, err
 	}
 
 	svc := cloudwatchlogs.New(sess)
-	xmlsFetcher := openXml.NewOpenXmlsFetcherImpl(svc)
+	return svc, nil
+}
 
+func main() {
+	svc, err := newCloudWatchService()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	xmlsFetcher := openXml.NewOpenXmlsFetcherImpl(svc)
 	router := initRouter(xmlsFetcher)
 
-	if err = router.Run(); err != nil {
-		fmt.Println(err.Error())
+	if err := router.Run(); err != nil {
+		fmt.Println(err)
 		return
 	}
 }
