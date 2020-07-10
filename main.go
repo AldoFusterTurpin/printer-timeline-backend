@@ -26,15 +26,31 @@ func extractQueryParams(c *gin.Context) map[string]string {
 	}
 }
 
+func selectHttpStatus(err error) int {
+	switch err.(type) {
+	case nil:
+		return http.StatusOK
+	/* case yourError:
+
+	case otherError:
+	*/
+	default:
+		return http.StatusInternalServerError
+	}
+}
+
 func OpenXmlHandler(xmlsFetcher openXml.OpenXmlsFetcher) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		queryParameters := extractQueryParams(c)
 
 		result, err := xmlsFetcher.GetUploadedOpenXmls(queryParameters)
+
+		status := selectHttpStatus(err)
+
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, result)
+			c.JSON(status, result)
 		} else {
-			c.JSON(http.StatusOK, result)
+			c.JSON(status, result)
 		}
 	}
 }
