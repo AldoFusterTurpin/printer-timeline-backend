@@ -14,11 +14,11 @@ type OpenXmlsFetcher interface {
 }
 
 type OpenXmlsFetcherImpl struct {
-	svc *cloudwatchlogs.CloudWatchLogs
+	queryExecutor cloudwatch.QueryExecutor
 }
 
-func NewOpenXmlsFetcherImpl(svc *cloudwatchlogs.CloudWatchLogs) OpenXmlsFetcherImpl {
-	return OpenXmlsFetcherImpl{svc}
+func NewOpenXmlsFetcherImpl(queryExecutor cloudwatch.QueryExecutor) OpenXmlsFetcherImpl {
+	return OpenXmlsFetcherImpl{queryExecutor}
 }
 
 func (openXmlsFetcherImpl OpenXmlsFetcherImpl) selectQueryTemplate(productNumber, serialNumber string) (templateString string) {
@@ -89,7 +89,7 @@ func (openXmlsFetcherImpl OpenXmlsFetcherImpl) GetUploadedOpenXmls(requestQueryP
 		return nil, err
 	}
 
-	result, err := cloudwatch.ExecuteQuery(openXmlsFetcherImpl.svc, insightsQueryParams)
+	result, err := openXmlsFetcherImpl.queryExecutor.ExecuteQuery(insightsQueryParams)
 	if err != nil {
 		return nil, err
 	}
