@@ -1,9 +1,10 @@
 package queryParamsCtrl
 
 import (
-	"bitbucket.org/aldoft/printer-timeline-backend/errors"
 	"strconv"
 	"time"
+
+	"bitbucket.org/aldoft/printer-timeline-backend/errors"
 )
 
 func stringEpochToUTCTime(s string) (time.Time, error) {
@@ -98,6 +99,8 @@ func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Ti
 	return startTime, endTime, nil
 }
 
+// ExtractTimeRange extracts from the query parameters the appropiate start time and end time based in some
+// logic using start_time, end_time, offset_units and offset_value. It also returns an error if any.
 func ExtractTimeRange(queryParameters map[string]string) (startTime time.Time, endTime time.Time, err error) {
 	timeType := queryParameters["time_type"]
 	if timeType == "" {
@@ -105,7 +108,7 @@ func ExtractTimeRange(queryParameters map[string]string) (startTime time.Time, e
 	}
 
 	startTimeEpoch := queryParameters["start_time"]
-	endTimeEpoch :=  queryParameters["end_time"]
+	endTimeEpoch := queryParameters["end_time"]
 	switch timeType {
 	case "relative":
 		offsetUnits := queryParameters["offset_units"]

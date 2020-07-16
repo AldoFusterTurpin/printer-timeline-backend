@@ -1,3 +1,5 @@
+// Package cloudwatch defines the functionality to perform queries in an external Service.
+// It also contains a default implementation that uses AWS CloudWatch client to perform the queries in AWS Insights.
 package cloudwatch
 
 import (
@@ -7,23 +9,29 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 )
 
-type QueryExecutor interface {
-	ExecuteQuery(insightsQueryParams InsightsQueryParams) (*cloudwatchlogs.GetQueryResultsOutput, error)
-}
-
-type QueryExecutorImpl struct {
-	svc *cloudwatchlogs.CloudWatchLogs
-}
-
-func NewQueryExecutorImpl(svc *cloudwatchlogs.CloudWatchLogs) QueryExecutorImpl {
-	return QueryExecutorImpl{svc}
-}
-
+// InsightsQueryParams are the parameters needed by QueryExecutor to execute the corresponding query
 type InsightsQueryParams struct {
 	StartTimeEpoch, EndTimeEpoch int64
 	LogGroupName, Query          string
 }
 
+// QueryExecutor is an interface responsible of performing a query to obtain a results based on insightsQueryParams
+type QueryExecutor interface {
+	ExecuteQuery(insightsQueryParams InsightsQueryParams) (*cloudwatchlogs.GetQueryResultsOutput, error)
+}
+
+// QueryExecutorImpl is the default implementation of the interface that obtains the result
+// using AWS CloudWatch Insights service client (svc variable) (https://docs.aws.amazon.com/sdk-for-go/api/service/cloudwatch/)
+type QueryExecutorImpl struct {
+	svc *cloudwatchlogs.CloudWatchLogs
+}
+
+// NewQueryExecutorImpl creates a new QueryExecutorImpl variable
+func NewQueryExecutorImpl(svc *cloudwatchlogs.CloudWatchLogs) QueryExecutor {
+	return QueryExecutorImpl{svc}
+}
+
+// ExecuteQuery method from QueryExecutorImpl executes a query using its cloudwatchlogs service client based on insightsQueryParams
 func (queryExecutor QueryExecutorImpl) ExecuteQuery(insightsQueryParams InsightsQueryParams) (*cloudwatchlogs.GetQueryResultsOutput, error) {
 	startQueryInput := &cloudwatchlogs.StartQueryInput{
 		StartTime:    aws.Int64(insightsQueryParams.StartTimeEpoch),
