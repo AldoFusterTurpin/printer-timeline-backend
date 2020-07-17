@@ -3,8 +3,8 @@
 package openXml
 
 import (
-	"bitbucket.org/aldoft/printer-timeline-backend/cloudwatch"
-	"bitbucket.org/aldoft/printer-timeline-backend/queryparams"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudwatch"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/queryparams"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 )
 

@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "bitbucket.org/aldoft/printer-timeline-backend/internal/api"
+	. "bitbucket.org/aldoft/printer-timeline-backend/app/internal/api"
 )
 
 var _ = Describe("Api", func() {
@@ -18,7 +18,7 @@ var _ = Describe("Api", func() {
 				mockOpenXmlsFetcher.EXPECT().GetUploadedOpenXmls(gomock.Any()).Return(errors.QueryStringMissingTimeRangeType).Times(1)
 
 				resultFunction := OpenXmlHandler(mockOpenXmlsFetcher)
-				
+
 				Expect(err).To(Equal(errors.QueryStringMissingTimeRangeType))
 			})
 		})

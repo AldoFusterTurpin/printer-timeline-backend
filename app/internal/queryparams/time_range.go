@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	"bitbucket.org/aldoft/printer-timeline-backend/errors"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
 )
 
 // stringEpochToUTCTime converts an epoch string to the corresponding time in UTC.

@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"time"
 
-	"bitbucket.org/aldoft/printer-timeline-backend/errors"
-	"bitbucket.org/aldoft/printer-timeline-backend/queryparams"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/queryparams"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
