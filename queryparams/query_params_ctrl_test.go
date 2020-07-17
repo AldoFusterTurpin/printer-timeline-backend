@@ -1,12 +1,13 @@
-package queryParamsCtrl_test
+package queryparams_test
 
 import (
-	"bitbucket.org/aldoft/printer-timeline-backend/errors"
-	"bitbucket.org/aldoft/printer-timeline-backend/queryParamsCtrl"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"strconv"
 	"time"
+
+	"bitbucket.org/aldoft/printer-timeline-backend/errors"
+	"bitbucket.org/aldoft/printer-timeline-backend/queryparams"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Query Parameters controller", func() {
@@ -14,9 +15,8 @@ var _ = Describe("Query Parameters controller", func() {
 
 		Context("Request query parameters don't contains any parameter", func() {
 			It("returns missing time range type error", func() {
-				queryParams := map[string]string{
-				}
-				_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+				queryParams := map[string]string{}
+				_, _, err := queryparams.ExtractTimeRange(queryParams)
 				Expect(err).To(Equal(errors.QueryStringMissingTimeRangeType))
 			})
 		})
@@ -27,7 +27,7 @@ var _ = Describe("Query Parameters controller", func() {
 					"pn": "L2E27A",
 					"sn": "SG59L1Q005",
 				}
-				_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+				_, _, err := queryparams.ExtractTimeRange(queryParams)
 				Expect(err).To(Equal(errors.QueryStringMissingTimeRangeType))
 			})
 		})
@@ -39,7 +39,7 @@ var _ = Describe("Query Parameters controller", func() {
 					"sn":        "SG59L1Q005",
 					"time_type": "",
 				}
-				_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+				_, _, err := queryparams.ExtractTimeRange(queryParams)
 				Expect(err).To(Equal(errors.QueryStringMissingTimeRangeType))
 			})
 		})
@@ -49,7 +49,7 @@ var _ = Describe("Query Parameters controller", func() {
 				queryParams := map[string]string{
 					"time_type": "always",
 				}
-				_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+				_, _, err := queryparams.ExtractTimeRange(queryParams)
 				Expect(err).To(Equal(errors.QueryStringUnsupportedTimeRangeType))
 			})
 		})
@@ -63,7 +63,7 @@ var _ = Describe("Query Parameters controller", func() {
 					"start_time": start,
 					"end_time":   end,
 				}
-				_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+				_, _, err := queryparams.ExtractTimeRange(queryParams)
 				Expect(err).To(Equal(errors.QueryStringUnsupportedTimeRangeType))
 			})
 		})
@@ -75,7 +75,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"time_type":  "relative",
 						"start_time": "1590084529",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringStartTimeAppears))
 				})
 			})
@@ -86,7 +86,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"time_type": "relative",
 						"end_time":  "1590084529",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringEndTimeAppears))
 				})
 			})
@@ -96,7 +96,7 @@ var _ = Describe("Query Parameters controller", func() {
 					queryParams := map[string]string{
 						"time_type": "relative",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringMissingOffsetUnits))
 				})
 			})
@@ -107,7 +107,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"time_type":    "relative",
 						"offset_units": "days",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringUnsupportedOffsetUnits))
 				})
 			})
@@ -118,7 +118,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"time_type":    "relative",
 						"offset_units": "minutes",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringMissingOffsetValue))
 				})
 			})
@@ -130,7 +130,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"offset_units": "seconds",
 						"offset_value": "Golang",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringUnsupportedOffsetValue))
 				})
 			})
@@ -142,7 +142,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"offset_units": "minutes",
 						"offset_value": "61",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringUnsupportedOffsetValue))
 				})
 			})
@@ -154,7 +154,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"offset_units": "minutes",
 						"offset_value": "-61",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringUnsupportedOffsetValue))
 				})
 			})
@@ -166,7 +166,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"offset_units": "minutes",
 						"offset_value": "0",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringUnsupportedOffsetValue))
 				})
 			})
@@ -178,7 +178,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"offset_units": "minutes",
 						"offset_value": "5",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(BeNil())
 				})
 			})
@@ -190,7 +190,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"offset_units": "seconds",
 						"offset_value": "36001",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringUnsupportedOffsetValue))
 				})
 			})
@@ -202,7 +202,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"offset_units": "seconds",
 						"offset_value": "-1",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringUnsupportedOffsetValue))
 				})
 			})
@@ -222,7 +222,7 @@ var _ = Describe("Query Parameters controller", func() {
 					expectedEndTime := time.Now().UTC()
 					expectedStartTime := expectedEndTime.Add(duration)
 
-					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					startTime, endTime, err := queryparams.ExtractTimeRange(queryParams)
 
 					Expect(err).To(BeNil())
 
@@ -258,7 +258,7 @@ var _ = Describe("Query Parameters controller", func() {
 					expectedEndTime := time.Now().UTC()
 					expectedStartTime := expectedEndTime.Add(duration)
 
-					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					startTime, endTime, err := queryparams.ExtractTimeRange(queryParams)
 
 					Expect(err).To(BeNil())
 
@@ -294,7 +294,7 @@ var _ = Describe("Query Parameters controller", func() {
 					expectedEndTime := time.Now().UTC()
 					expectedStartTime := expectedEndTime.Add(duration)
 
-					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					startTime, endTime, err := queryparams.ExtractTimeRange(queryParams)
 
 					Expect(err).To(BeNil())
 
@@ -329,7 +329,7 @@ var _ = Describe("Query Parameters controller", func() {
 					expectedEndTime := time.Now().UTC()
 					expectedStartTime := expectedEndTime.Add(duration)
 
-					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					startTime, endTime, err := queryparams.ExtractTimeRange(queryParams)
 
 					Expect(err).To(BeNil())
 
@@ -364,7 +364,7 @@ var _ = Describe("Query Parameters controller", func() {
 					expectedEndTime := time.Now().UTC()
 					expectedStartTime := expectedEndTime.Add(duration)
 
-					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					startTime, endTime, err := queryparams.ExtractTimeRange(queryParams)
 
 					Expect(err).To(BeNil())
 
@@ -392,7 +392,7 @@ var _ = Describe("Query Parameters controller", func() {
 					queryParams := map[string]string{
 						"time_type": "absolute",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringMissingStartTime))
 				})
 			})
@@ -403,7 +403,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"time_type":  "absolute",
 						"start_time": "",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringMissingStartTime))
 				})
 			})
@@ -414,7 +414,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"time_type":  "absolute",
 						"start_time": "This_is_invalid",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringUnsupportedStartTime))
 				})
 			})
@@ -425,7 +425,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"time_type":  "absolute",
 						"start_time": "6.6",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringUnsupportedStartTime))
 				})
 			})
@@ -437,7 +437,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"time_type":  "absolute",
 						"start_time": nowEpoch,
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringMissingEndTime))
 				})
 			})
@@ -450,7 +450,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": now,
 						"end_time":   "",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringMissingEndTime))
 				})
 			})
@@ -463,7 +463,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": now,
 						"end_time":   "Software",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringUnsupportedEndTime))
 				})
 			})
@@ -476,7 +476,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": now,
 						"end_time":   "159008452.9",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringUnsupportedEndTime))
 				})
 			})
@@ -490,7 +490,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": start,
 						"end_time":   end,
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringTimeDifferenceTooBig))
 				})
 			})
@@ -504,7 +504,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": start,
 						"end_time":   end,
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringTimeDifferenceTooBig))
 				})
 			})
@@ -516,7 +516,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": "1590753903",
 						"end_time":   "1590755043",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(BeNil())
 				})
 			})
@@ -530,7 +530,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": start,
 						"end_time":   end,
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(BeNil())
 				})
 			})
@@ -544,7 +544,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": start,
 						"end_time":   end,
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(BeNil())
 				})
 			})
@@ -556,7 +556,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": "1590753642",
 						"end_time":   "1590755442",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(BeNil())
 				})
 			})
@@ -568,7 +568,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": "1590751918",
 						"end_time":   "1590755518",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(BeNil())
 				})
 			})
@@ -580,7 +580,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": "1590751918",
 						"end_time":   "1590755518",
 					}
-					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					startTime, endTime, err := queryparams.ExtractTimeRange(queryParams)
 
 					Expect(err).To(BeNil())
 
@@ -607,7 +607,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": "1589968858",
 						"end_time":   "1589970658",
 					}
-					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					startTime, endTime, err := queryparams.ExtractTimeRange(queryParams)
 
 					Expect(err).To(BeNil())
 
@@ -634,7 +634,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": "1590825058",
 						"end_time":   "1590827758",
 					}
-					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					startTime, endTime, err := queryparams.ExtractTimeRange(queryParams)
 
 					Expect(err).To(BeNil())
 
@@ -661,7 +661,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": "1578215700",
 						"end_time":   "1578215720",
 					}
-					startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					startTime, endTime, err := queryparams.ExtractTimeRange(queryParams)
 
 					Expect(err).To(BeNil())
 
@@ -688,7 +688,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": "1590751203",
 						"end_time":   "1590755043",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringTimeDifferenceTooBig))
 				})
 			})
@@ -700,7 +700,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": "1589282403",
 						"end_time":   "1590755043",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringTimeDifferenceTooBig))
 				})
 			})
@@ -714,7 +714,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": start,
 						"end_time":   end,
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringTimeDifferenceTooBig))
 				})
 			})
@@ -728,7 +728,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": start,
 						"end_time":   end,
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringEndTimePreviousThanStartTime))
 				})
 			})
@@ -740,7 +740,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": "1590766655",
 						"end_time":   "1590766643",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringEndTimePreviousThanStartTime))
 				})
 			})
@@ -752,7 +752,7 @@ var _ = Describe("Query Parameters controller", func() {
 						"start_time": "1590766681",
 						"end_time":   "1590680281",
 					}
-					_, _, err := queryParamsCtrl.ExtractTimeRange(queryParams)
+					_, _, err := queryparams.ExtractTimeRange(queryParams)
 					Expect(err).To(Equal(errors.QueryStringEndTimePreviousThanStartTime))
 				})
 			})
@@ -763,9 +763,8 @@ var _ = Describe("Query Parameters controller", func() {
 	Describe("Extract Printer number and Serial number from query parameters", func() {
 		Context("When neither Product number nor Serial number is present in query parameters", func() {
 			It("returns no error", func() {
-				queryParams := map[string]string{
-				}
-				_, _, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+				queryParams := map[string]string{}
+				_, _, err := queryparams.ExtractPrinterInfo(queryParams)
 
 				Expect(err).To(BeNil())
 
@@ -777,7 +776,7 @@ var _ = Describe("Query Parameters controller", func() {
 				queryParams := map[string]string{
 					"pn": "CZ056A",
 				}
-				_, _, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+				_, _, err := queryparams.ExtractPrinterInfo(queryParams)
 
 				Expect(err).To(BeNil())
 
@@ -789,7 +788,7 @@ var _ = Describe("Query Parameters controller", func() {
 				queryParams := map[string]string{
 					"sn": "SG4491P001",
 				}
-				_, _, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+				_, _, err := queryparams.ExtractPrinterInfo(queryParams)
 
 				Expect(err).To(Equal(errors.QueryStringPnSn))
 
@@ -802,7 +801,7 @@ var _ = Describe("Query Parameters controller", func() {
 					"pn": "CZ056A",
 					"sn": "SG4491P001",
 				}
-				productNumber, serialNumber, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+				productNumber, serialNumber, err := queryparams.ExtractPrinterInfo(queryParams)
 
 				Expect(productNumber).To(Equal("CZ056A"))
 				Expect(serialNumber).To(Equal("SG4491P001"))
@@ -815,9 +814,8 @@ var _ = Describe("Query Parameters controller", func() {
 	Describe("Extract Printer number and Serial number from query parameters", func() {
 		Context("When neither Product number nor Serial number is present in query parameters", func() {
 			It("returns no error", func() {
-				queryParams := map[string]string{
-				}
-				_, _, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+				queryParams := map[string]string{}
+				_, _, err := queryparams.ExtractPrinterInfo(queryParams)
 
 				Expect(err).To(BeNil())
 
@@ -829,7 +827,7 @@ var _ = Describe("Query Parameters controller", func() {
 				queryParams := map[string]string{
 					"pn": "CZ056A",
 				}
-				_, _, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+				_, _, err := queryparams.ExtractPrinterInfo(queryParams)
 
 				Expect(err).To(BeNil())
 
@@ -841,7 +839,7 @@ var _ = Describe("Query Parameters controller", func() {
 				queryParams := map[string]string{
 					"sn": "SG4491P001",
 				}
-				_, _, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+				_, _, err := queryparams.ExtractPrinterInfo(queryParams)
 
 				Expect(err).To(Equal(errors.QueryStringPnSn))
 
@@ -854,7 +852,7 @@ var _ = Describe("Query Parameters controller", func() {
 					"pn": "CZ056A",
 					"sn": "SG4491P001",
 				}
-				productNumber, serialNumber, err := queryParamsCtrl.ExtractPrinterInfo(queryParams)
+				productNumber, serialNumber, err := queryparams.ExtractPrinterInfo(queryParams)
 
 				Expect(productNumber).To(Equal("CZ056A"))
 				Expect(serialNumber).To(Equal("SG4491P001"))

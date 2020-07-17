@@ -1,4 +1,4 @@
-package queryParamsCtrl_test
+package queryparams_test
 
 import (
 	"testing"
@@ -9,5 +9,5 @@ import (
 
 func TestQueryParamsCtrl(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Query Params Ctrl Suite")
+	RunSpecs(t, "Query Params Suite")
 }

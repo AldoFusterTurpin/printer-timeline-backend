@@ -4,7 +4,7 @@ package openXml
 
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/cloudwatch"
-	"bitbucket.org/aldoft/printer-timeline-backend/queryParamsCtrl"
+	"bitbucket.org/aldoft/printer-timeline-backend/queryparams"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 )
 
@@ -49,12 +49,12 @@ func (openXmlsFetcherImpl OpenXmlsFetcherImpl) createQueryTemplate(productNumber
 // createInsightsQueryParams creates InsightQueryParameters based on requestQueryParams.
 // The returned InsightQueryParameters will be used by a QueryExecutor to execute the query. It also returns an error, if any.
 func (openXmlsFetcherImpl OpenXmlsFetcherImpl) createInsightsQueryParams(requestQueryParams map[string]string) (insightsQueryParams cloudwatch.InsightsQueryParams, err error) {
-	startTime, endTime, err := queryParamsCtrl.ExtractTimeRange(requestQueryParams)
+	startTime, endTime, err := queryparams.ExtractTimeRange(requestQueryParams)
 	if err != nil {
 		return
 	}
 
-	productNumber, serialNumber, err := queryParamsCtrl.ExtractPrinterInfo(requestQueryParams)
+	productNumber, serialNumber, err := queryparams.ExtractPrinterInfo(requestQueryParams)
 	if err != nil {
 		return
 	}

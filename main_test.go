@@ -16,6 +16,8 @@ var _ = Describe("Main", func() {
 				mockCtrl := gomock.NewController(GinkgoT())
 				defer mockCtrl.Finish()
 
+				//TODO: can't acces functions from main. Should move main/OpenXmlHandler to another package (maybe called apiHandler) but 
+				//don't want to mix http status with error types.
 				mockOpenXmlsFetcher := mocks.NewMockOpenXmlsFetcher
 				resultFunction := OpenXmlHandler(xmlsFetcher)
 

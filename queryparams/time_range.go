@@ -1,4 +1,4 @@
-package queryParamsCtrl
+package queryparams
 
 import (
 	"strconv"
@@ -7,6 +7,7 @@ import (
 	"bitbucket.org/aldoft/printer-timeline-backend/errors"
 )
 
+// stringEpochToUTCTime converts an epoch string to the corresponding time in UTC.
 func stringEpochToUTCTime(s string) (time.Time, error) {
 	sec, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
@@ -17,6 +18,9 @@ func stringEpochToUTCTime(s string) (time.Time, error) {
 	return t.In(loc), nil
 }
 
+// processOffset returns and start time and end time based in offsetUnits and offsetValue.
+// It is used for the relative time in the api.
+// It also returns an error if any.
 func processOffset(offsetUnits, offsetValue string) (startTime time.Time, endTime time.Time, err error) {
 	if offsetValue == "" {
 		return time.Time{}, time.Time{}, errors.QueryStringMissingOffsetValue
@@ -51,6 +55,8 @@ func processOffset(offsetUnits, offsetValue string) (startTime time.Time, endTim
 	return startTime.UTC(), endTime.UTC(), nil
 }
 
+// processRelativeTime receives and start and end time as strings, ofsset untis and value and returns the appropiate start and end time.
+// It also returns an error if any.
 func processRelativeTime(startTimeEpoch, endTimeEpoch, offsetUnits, offsetValue string) (startTime time.Time, endTime time.Time, err error) {
 	if startTimeEpoch != "" {
 		return time.Time{}, time.Time{}, errors.QueryStringStartTimeAppears
@@ -70,6 +76,8 @@ func processRelativeTime(startTimeEpoch, endTimeEpoch, offsetUnits, offsetValue 
 	return processOffset(offsetUnits, offsetValue)
 }
 
+// processRelativeTime receives and start and end timeas strings and returns the appropiate start and end time variables.
+// It also returns an error if any.
 func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Time, endTime time.Time, err error) {
 	if startTimeEpoch == "" {
 		return time.Time{}, time.Time{}, errors.QueryStringMissingStartTime
@@ -100,7 +108,8 @@ func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Ti
 }
 
 // ExtractTimeRange extracts from the query parameters the appropiate start time and end time based in some
-// logic using start_time, end_time, offset_units and offset_value. It also returns an error if any.
+// logic using start_time, end_time, offset_units and offset_value.
+// It also returns an error if any.
 func ExtractTimeRange(queryParameters map[string]string) (startTime time.Time, endTime time.Time, err error) {
 	timeType := queryParameters["time_type"]
 	if timeType == "" {

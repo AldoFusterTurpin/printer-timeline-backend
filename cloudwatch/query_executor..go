@@ -1,5 +1,5 @@
 // Package cloudwatch defines the functionality to perform queries in an external Service.
-// It also contains a default implementation that uses AWS CloudWatch client to perform the queries in AWS Insights.
+// It also contains a default implementation that uses AWS CloudWatch client to perform the queries in AWS Cloudwatch Insights.
 package cloudwatch
 
 import (
@@ -15,23 +15,26 @@ type InsightsQueryParams struct {
 	LogGroupName, Query          string
 }
 
-// QueryExecutor is an interface responsible of performing a query to obtain a results based on insightsQueryParams
+// QueryExecutor is an interface responsible of performing a query based on insightsQueryParams.
+// The query itself is inside 'insightsQueryParams'.
+// It returns the result of the query and an error, if any.
 type QueryExecutor interface {
 	ExecuteQuery(insightsQueryParams InsightsQueryParams) (*cloudwatchlogs.GetQueryResultsOutput, error)
 }
 
-// QueryExecutorImpl is the default implementation of the interface that obtains the result
+// QueryExecutorImpl is the default implementation of the interface QueryExecutor. It obtains the results
 // using AWS CloudWatch Insights service client (svc variable) (https://docs.aws.amazon.com/sdk-for-go/api/service/cloudwatch/)
 type QueryExecutorImpl struct {
 	svc *cloudwatchlogs.CloudWatchLogs
 }
 
-// NewQueryExecutorImpl creates a new QueryExecutorImpl variable
+// NewQueryExecutorImpl creates a new QueryExecutorImpl.
 func NewQueryExecutorImpl(svc *cloudwatchlogs.CloudWatchLogs) QueryExecutor {
 	return QueryExecutorImpl{svc}
 }
 
-// ExecuteQuery method from QueryExecutorImpl executes a query using its cloudwatchlogs service client based on insightsQueryParams
+// ExecuteQuery is a  method of QueryExecutorImpl that executes a query using its cloudwatchlogs service client based on insightsQueryParams.
+// It also returns an error, if any.
 func (queryExecutor QueryExecutorImpl) ExecuteQuery(insightsQueryParams InsightsQueryParams) (*cloudwatchlogs.GetQueryResultsOutput, error) {
 	startQueryInput := &cloudwatchlogs.StartQueryInput{
 		StartTime:    aws.Int64(insightsQueryParams.StartTimeEpoch),

@@ -9,8 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ExtractQueryParams is responsible of extracting the query parameters from the gin context.
-// and returns a map with those query parameters
+// ExtractQueryParams is responsible of extracting the query parameters from the gin context
+// and returns a map with those query parameters.
 func ExtractQueryParams(c *gin.Context) map[string]string {
 	return map[string]string{
 		"time_type":    c.Query("time_type"),
@@ -23,7 +23,7 @@ func ExtractQueryParams(c *gin.Context) map[string]string {
 	}
 }
 
-// SelectHttpStatus returns the appropiate http status based on the kind of error passed as a parameter.
+// SelectHttpStatus returns the appropiate http status based on the error passed as a parameter.
 func SelectHttpStatus(err error) int {
 	switch err {
 	case nil:
@@ -41,7 +41,7 @@ func SelectHttpStatus(err error) int {
 
 // OpenXmlHandler is the responsible of handle the request of get the uploaded openXmls.
 // It returns a gin handler function that handles all the logic behind the http request.
-// It uses a xmlsFetcher that is responsible fo fetching the OpenXMls.
+// It uses an xmlsFetcher interface that is responsible of fetching the OpenXMls.
 func OpenXmlHandler(xmlsFetcher openXml.OpenXmlsFetcher) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		queryParameters := ExtractQueryParams(c)
@@ -58,7 +58,7 @@ func OpenXmlHandler(xmlsFetcher openXml.OpenXmlsFetcher) gin.HandlerFunc {
 }
 
 // InitRouter initialize a gin router with all the routes for the different endpoints, request types and functions
-// responsible of handling each request to the specific endpoints.
+// that are responsible of handling each request to specific endpoints.
 func InitRouter(xmlsFetcher openXml.OpenXmlsFetcher) *gin.Engine {
 	router := gin.Default()
 	router.Use(cors.Default())

@@ -6,7 +6,8 @@ import (
 )
 
 // CreateQuery receives a template string and a map of values and
-// returns the resulting query of replacing the mapValues in queryTemplateStr and an error, if any.
+// returns the resulting query of replacing the mapValues in queryTemplateStr.
+// It also returns an error, if any.
 func CreateQuery(queryTemplateStr string, mapValues map[string]string) (query string, err error) {
 	queryTemplate, err := template.New("queryTemplate").Parse(queryTemplateStr)
 	if err != nil {
