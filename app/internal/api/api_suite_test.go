@@ -1,4 +1,4 @@
-package openXml_test
+package api_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestOpenXml(t *testing.T) {
+func TestApi(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "OpenXml Suite")
+	RunSpecs(t, "Api Suite")
 }

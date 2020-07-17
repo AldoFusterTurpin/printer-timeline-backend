@@ -1,5 +1,4 @@
-//TODO change to constant using Error interface THANKS ADOLFO
-
+// package errors defines the different errors of the application.
 package errors
 
 type constError string

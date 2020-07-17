@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	myErrors "bitbucket.org/aldoft/printer-timeline-backend/errors"
-	"bitbucket.org/aldoft/printer-timeline-backend/openXml"
+	myErrors "bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/openXml"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -39,6 +39,17 @@ func SelectHttpStatus(err error) int {
 	}
 }
 
+// InitRouter initialize a gin router with all the routes for the different endpoints, request types and functions
+// that are responsible of handling each request to specific endpoints.
+func InitRouter(xmlsFetcher openXml.OpenXmlsFetcher) *gin.Engine {
+	router := gin.Default()
+	router.Use(cors.Default())
+
+	router.GET("api/open_xml", OpenXmlHandler(xmlsFetcher))
+
+	return router
+}
+
 // OpenXmlHandler is the responsible of handle the request of get the uploaded openXmls.
 // It returns a gin handler function that handles all the logic behind the http request.
 // It uses an xmlsFetcher interface that is responsible of fetching the OpenXMls.
@@ -55,15 +66,4 @@ func OpenXmlHandler(xmlsFetcher openXml.OpenXmlsFetcher) gin.HandlerFunc {
 		}
 		c.JSON(status, result)
 	}
-}
-
-// InitRouter initialize a gin router with all the routes for the different endpoints, request types and functions
-// that are responsible of handling each request to specific endpoints.
-func InitRouter(xmlsFetcher openXml.OpenXmlsFetcher) *gin.Engine {
-	router := gin.Default()
-	router.Use(cors.Default())
-
-	router.GET("api/open_xml", OpenXmlHandler(xmlsFetcher))
-
-	return router
 }
