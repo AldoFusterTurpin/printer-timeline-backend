@@ -1,4 +1,4 @@
-module bitbucket.org/aldoft/printer-timeline-backend
+module bitbucket.org/aldoft/printer-timeline-backend/app
 
 go 1.14
 
