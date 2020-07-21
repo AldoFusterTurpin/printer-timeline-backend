@@ -5,6 +5,7 @@ import (
 
 	myErrors "bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/openXml"
+	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -45,21 +46,31 @@ func InitRouter(xmlsFetcher openXml.OpenXmlsFetcher) *gin.Engine {
 	router := gin.Default()
 	router.Use(cors.Default())
 
-	router.GET("api/open_xml", OpenXmlHandler(xmlsFetcher))
+	router.GET("api/open_xml", OpenXMLHandler(xmlsFetcher))
 
 	return router
 }
 
-// OpenXmlHandler is the responsible of handle the request of get the uploaded openXmls.
+// GetOpenXmls is the responsible of obtaining the Xmls based in the queryParameters.
+//This function is independent of the Framework to create the web server as its input is just
+// a map containing the http query parameters.
+// A xmlsFetcher is injected to use it in order to obtain the Xmls.
+func GetOpenXmls(queryParameters map[string]string, xmlsFetcher openXml.OpenXmlsFetcher) (status int, result *cloudwatchlogs.GetQueryResultsOutput, err error) {
+	result, err = xmlsFetcher.GetUploadedOpenXmls(queryParameters)
+
+	status = SelectHttpStatus(err)
+
+	return status, result, err
+
+}
+
+// OpenXMLHandler is the responsible to handle the request of get the uploaded openXmls.
 // It returns a gin handler function that handles all the logic behind the http request.
 // It uses an xmlsFetcher interface that is responsible of fetching the OpenXMls.
-func OpenXmlHandler(xmlsFetcher openXml.OpenXmlsFetcher) gin.HandlerFunc {
+// It calls GetOpenXmls that is responsible of obtaiing the Xmls
+func OpenXMLHandler(xmlsFetcher openXml.OpenXmlsFetcher) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		queryParameters := ExtractQueryParams(c)
-
-		result, err := xmlsFetcher.GetUploadedOpenXmls(queryParameters)
-
-		status := SelectHttpStatus(err)
+		status, result, err := GetOpenXmls(ExtractQueryParams(c), xmlsFetcher)
 
 		if err != nil {
 			c.JSON(status, err.Error())
