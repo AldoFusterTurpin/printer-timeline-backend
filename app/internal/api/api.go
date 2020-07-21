@@ -24,8 +24,8 @@ func ExtractQueryParams(c *gin.Context) map[string]string {
 	}
 }
 
-// SelectHttpStatus returns the appropiate http status based on the error passed as a parameter.
-func SelectHttpStatus(err error) int {
+// SelectHTTPStatus returns the appropiate http status based on the error passed as a parameter.
+func SelectHTTPStatus(err error) int {
 	switch err {
 	case nil:
 		return http.StatusOK
@@ -58,7 +58,7 @@ func InitRouter(xmlsFetcher openXml.OpenXmlsFetcher) *gin.Engine {
 func GetOpenXmls(queryParameters map[string]string, xmlsFetcher openXml.OpenXmlsFetcher) (status int, result *cloudwatchlogs.GetQueryResultsOutput, err error) {
 	result, err = xmlsFetcher.GetUploadedOpenXmls(queryParameters)
 
-	status = SelectHttpStatus(err)
+	status = SelectHTTPStatus(err)
 
 	return status, result, err
 
