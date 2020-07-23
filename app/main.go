@@ -8,13 +8,15 @@ import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/api"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudwatch"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/openXml"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/s3storage"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func createCloudWatchServiceClient() (*cloudwatchlogs.CloudWatchLogs, error) {
+func createAWSSession() (*session.Session, error) {
 	envVarName := "AWS_REGION"
 
 	awsRegion, ok := os.LookupEnv(envVarName)
@@ -22,36 +24,50 @@ func createCloudWatchServiceClient() (*cloudwatchlogs.CloudWatchLogs, error) {
 		return nil, errors.New("could not load " + envVarName + " environment variable")
 	}
 
-	sess, err := session.NewSession(&aws.Config{
+	return session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion)},
 	)
+}
 
+func createCloudWatch(sess *session.Session) (*cloudwatchlogs.CloudWatchLogs, error) {
+	sess, err := createAWSSession()
 	if err != nil {
 		return nil, err
 	}
-
 	return cloudwatchlogs.New(sess), nil
 }
 
-func createQueryExecutor() (cloudwatch.QueryExecutor, error) {
-	svc, err := createCloudWatchServiceClient()
-	if err != nil {
-		return nil, err
-	}
+func createQueryExecutor(svc *cloudwatchlogs.CloudWatchLogs) cloudwatch.QueryExecutor {
+	return cloudwatch.NewQueryExecutorImpl(svc)
+}
 
-	return cloudwatch.NewQueryExecutorImpl(svc), nil
+//TODO: call this function in main and the result object will be used to handle the retrieval of
+//the S3 data
+func createS3Fetcher(sess *session.Session) s3storage.S3Fetcher {
+	svc := s3.New(sess)
+	return svc
 }
 
 func main() {
-	queryExecutor, err := createQueryExecutor()
+	sess, err := createAWSSession()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
+	svc, err := createCloudWatch(sess)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	queryExecutor := createQueryExecutor(svc)
+
 	xmlsFetcher := openXml.NewOpenXmlsFetcherImpl(queryExecutor)
 
-	router := api.InitRouter(xmlsFetcher)
+	s3Fetcher := createS3Fetcher(sess)
+
+	router := api.InitRouter(s3Fetcher, xmlsFetcher)
 
 	if err := router.Run(); err != nil {
 		fmt.Println(err)
