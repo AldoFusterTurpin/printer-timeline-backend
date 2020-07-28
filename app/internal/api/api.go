@@ -28,8 +28,9 @@ func ExtractQueryParams(c *gin.Context) map[string]string {
 // and returns a map with those query parameters. It is used in the GetStoredObject endpoint.
 func ExtractStorageQueryParams(c *gin.Context) map[string]string {
 	return map[string]string{
-		"bucket_name": c.Query("bucket_name"),
-		"object_key":  c.Query("object_key"),
+		"bucket_region": c.Query("bucket_region"),
+		"bucket_name":   c.Query("bucket_name"),
+		"object_key":    c.Query("object_key"),
 	}
 }
 
@@ -51,11 +52,11 @@ func SelectHTTPStatus(err error) int {
 
 // InitRouter initialize a gin router with all the routes for the different endpoints, request types and functions
 // that are responsible of handling each request to specific endpoints.
-func InitRouter(s3fetcher s3storage.S3Fetcher, xmlsFetcher openXml.OpenXmlsFetcher) *gin.Engine {
+func InitRouter(s3fetcher1 s3storage.S3Fetcher, s3fetcher2 s3storage.S3Fetcher, xmlsFetcher openXml.OpenXmlsFetcher) *gin.Engine {
 	router := gin.Default()
 	router.Use(cors.Default())
 
-	router.GET("api/object", StorageHandler(s3fetcher))
+	router.GET("api/object", StorageHandler(s3fetcher1, s3fetcher2))
 	router.GET("api/open_xml", OpenXMLHandler(xmlsFetcher))
 
 	return router

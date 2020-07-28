@@ -16,24 +16,38 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func createAWSSession() (*session.Session, error) {
+func createAWSSession() (sess1 *session.Session, sess2 *session.Session, err error) {
 	envVarName := "AWS_REGION"
+	envVarName2 := "AWS_REGION_BLACK_SEA_BUCKET"
 
-	awsRegion, ok := os.LookupEnv(envVarName)
+	awsRegion1, ok := os.LookupEnv(envVarName)
 	if !ok {
-		return nil, errors.New("could not load " + envVarName + " environment variable")
+		return nil, nil, errors.New("could not load " + envVarName + " environment variable")
 	}
 
-	return session.NewSession(&aws.Config{
-		Region: aws.String(awsRegion)},
+	sess1, err = session.NewSession(&aws.Config{
+		Region: aws.String(awsRegion1)},
 	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	awsRegion2, ok := os.LookupEnv(envVarName2)
+	if !ok {
+		return nil, nil, errors.New("could not load " + envVarName + " environment variable")
+	}
+
+	sess2, err = session.NewSession(&aws.Config{
+		Region: aws.String(awsRegion2)},
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return sess1, sess2, nil
 }
 
 func createCloudWatch(sess *session.Session) (*cloudwatchlogs.CloudWatchLogs, error) {
-	sess, err := createAWSSession()
-	if err != nil {
-		return nil, err
-	}
 	return cloudwatchlogs.New(sess), nil
 }
 
@@ -49,13 +63,13 @@ func createS3Fetcher(sess *session.Session) s3storage.S3Fetcher {
 }
 
 func main() {
-	sess, err := createAWSSession()
+	sess1, sess2, err := createAWSSession()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	svc, err := createCloudWatch(sess)
+	svc, err := createCloudWatch(sess1)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -65,9 +79,10 @@ func main() {
 
 	xmlsFetcher := openXml.NewOpenXmlsFetcherImpl(queryExecutor)
 
-	s3Fetcher := createS3Fetcher(sess)
+	s3FetcherUsEast1 := createS3Fetcher(sess1)
+	s3FetcherUsWest1 := createS3Fetcher(sess2)
 
-	router := api.InitRouter(s3Fetcher, xmlsFetcher)
+	router := api.InitRouter(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher)
 
 	if err := router.Run(); err != nil {
 		fmt.Println(err)
