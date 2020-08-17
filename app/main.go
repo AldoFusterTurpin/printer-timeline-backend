@@ -55,8 +55,6 @@ func createQueryExecutor(svc *cloudwatchlogs.CloudWatchLogs) cloudwatch.QueryExe
 	return cloudwatch.NewQueryExecutorImpl(svc)
 }
 
-//TODO: call this function in main and the result object will be used to handle the retrieval of
-//the S3 data
 func createS3Fetcher(sess *session.Session) s3storage.S3Fetcher {
 	svc := s3.New(sess)
 	return svc

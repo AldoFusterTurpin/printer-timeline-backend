@@ -1,6 +1,8 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+To run the API execute:
+
+export AWS_REGION=us-east-1 && export AWS_REGION_BLACK_SEA_BUCKET=us-west-1 && go run main.go
 
 ### What is this repository for? ###
 

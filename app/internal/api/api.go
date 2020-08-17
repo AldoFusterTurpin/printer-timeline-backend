@@ -52,11 +52,11 @@ func SelectHTTPStatus(err error) int {
 
 // InitRouter initialize a gin router with all the routes for the different endpoints, request types and functions
 // that are responsible of handling each request to specific endpoints.
-func InitRouter(s3fetcher1 s3storage.S3Fetcher, s3fetcher2 s3storage.S3Fetcher, xmlsFetcher openXml.OpenXmlsFetcher) *gin.Engine {
+func InitRouter(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage.S3Fetcher, xmlsFetcher openXml.OpenXmlsFetcher) *gin.Engine {
 	router := gin.Default()
 	router.Use(cors.Default())
 
-	router.GET("api/object", StorageHandler(s3fetcher1, s3fetcher2))
+	router.GET("api/object", StorageHandler(s3FetcherUsEast1, s3FetcherUsWest1))
 	router.GET("api/open_xml", OpenXMLHandler(xmlsFetcher))
 
 	return router
