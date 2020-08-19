@@ -1,0 +1,285 @@
+{
+	"info": {
+		"_postman_id": "b7c89d17-3b3f-437b-b6cb-23441dbde53c",
+		"name": "printer-timeline-backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "get uploaded openXMLs specific Pn and Sn relative time",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:8080/api/open_xml?pn=K4G10A&sn=SG58P1R001&time_type=relative&offset_units=minutes&offset_value=3",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"open_xml"
+					],
+					"query": [
+						{
+							"key": "pn",
+							"value": "K4G10A"
+						},
+						{
+							"key": "sn",
+							"value": "SG58P1R001"
+						},
+						{
+							"key": "time_type",
+							"value": "relative"
+						},
+						{
+							"key": "offset_units",
+							"value": "minutes"
+						},
+						{
+							"key": "offset_value",
+							"value": "3"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get uploaded openXMLs specific Pn relative time",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:8080/api/open_xml?pn=K4G10A&time_type=relative&offset_units=minutes&offset_value=5",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"open_xml"
+					],
+					"query": [
+						{
+							"key": "pn",
+							"value": "K4G10A"
+						},
+						{
+							"key": "time_type",
+							"value": "relative"
+						},
+						{
+							"key": "offset_units",
+							"value": "minutes"
+						},
+						{
+							"key": "offset_value",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get uploaded openXMLs specific Pn (duplicated) and Sn relative time",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:8080/api/open_xml?pn=L2E27A&pn=K4G10A&sn=SG59L1Q005&time_type=relative&offset_units=minutes&offset_value=15",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"open_xml"
+					],
+					"query": [
+						{
+							"key": "pn",
+							"value": "L2E27A"
+						},
+						{
+							"key": "pn",
+							"value": "K4G10A"
+						},
+						{
+							"key": "sn",
+							"value": "SG59L1Q005"
+						},
+						{
+							"key": "time_type",
+							"value": "relative"
+						},
+						{
+							"key": "offset_units",
+							"value": "minutes"
+						},
+						{
+							"key": "offset_value",
+							"value": "15"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get all uploaded openXMLs relative time",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:8080/api/open_xml?time_type=relative&offset_units=minutes&offset_value=2",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"open_xml"
+					],
+					"query": [
+						{
+							"key": "time_type",
+							"value": "relative"
+						},
+						{
+							"key": "offset_units",
+							"value": "minutes"
+						},
+						{
+							"key": "offset_value",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get all cloudJSONS relative time",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:8080/api/cloud_json?time_type=relative&offset_units=minutes&offset_value=2",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"cloud_json"
+					],
+					"query": [
+						{
+							"key": "time_type",
+							"value": "relative"
+						},
+						{
+							"key": "offset_units",
+							"value": "minutes"
+						},
+						{
+							"key": "offset_value",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "download S3 object",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:8080/api/object?bucket_name=cloudconnector-to-blacksea-production&object_key=K0Q46A!SG03B1S004-3932a6e0-2477-40a5-bb55-d40c234b8bb8",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"object"
+					],
+					"query": [
+						{
+							"key": "bucket_name",
+							"value": "cloudconnector-to-blacksea-production"
+						},
+						{
+							"key": "object_key",
+							"value": "K0Q46A!SG03B1S004-3932a6e0-2477-40a5-bb55-d40c234b8bb8"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get openXMLs specific Pn and Sn no time type",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:8080/api/open_xml?pn=L2E27A&sn=SG59L1Q005",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"open_xml"
+					],
+					"query": [
+						{
+							"key": "pn",
+							"value": "L2E27A"
+						},
+						{
+							"key": "sn",
+							"value": "SG59L1Q005"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
