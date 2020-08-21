@@ -29,4 +29,9 @@ const (
 	QueryStringEndTimePreviousThanStartTime = constError("query string end time is previous in time than start time error")
 
 	QueryStringPnSn = constError("query string Product Number missing but Serial Number present error")
+
+	QueryStringMissingBucketRegion     = constError("query string missing bucket region error")
+	QueryStringMissingBucketName       = constError("query string missing bucket name error")
+	QueryStringMissingObjectKey        = constError("query string missing object key error")
+	QueryStringUnsupportedBucketRegion = constError("query string unsupported bucket region error")
 )
