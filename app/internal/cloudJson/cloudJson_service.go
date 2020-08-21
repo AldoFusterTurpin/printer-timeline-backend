@@ -37,9 +37,9 @@ func (cloudJsonsFetcherImpl CloudJsonsFetcherImpl) createQueryTemplate(productNu
 		s2 := "`fields.metadata.xml-generator-object-path`"
 		s3 := `| filter (ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date)`
 		s4 := " and ispresent(`fields.metadata.xml-generator-object-path`)"
-		s5 := ` and fields.ProductNumber="{{.productNumber}}" and fields.SerialNumber="{{.serialNumber}}")
+		s5 := ` and fields.topic = "json" and fields.ProductNumber="{{.productNumber}}" and fields.SerialNumber="{{.serialNumber}}")
 		| sort @timestamp asc
-		|limit 10000`
+		| limit 10000`
 
 		return s1 + s2 + s3 + s4 + s5
 	}
@@ -48,9 +48,9 @@ func (cloudJsonsFetcherImpl CloudJsonsFetcherImpl) createQueryTemplate(productNu
 		s2 := "`fields.metadata.xml-generator-object-path`"
 		s3 := `| filter (ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date)`
 		s4 := " and ispresent(`fields.metadata.xml-generator-object-path`)"
-		s5 := ` and fields.ProductNumber="{{.productNumber}}")
+		s5 := ` and fields.topic = "json" and fields.ProductNumber="{{.productNumber}}")
 		| sort @timestamp asc
-		|limit 10000`
+		| limit 10000`
 
 		return s1 + s2 + s3 + s4 + s5
 	}
@@ -58,10 +58,11 @@ func (cloudJsonsFetcherImpl CloudJsonsFetcherImpl) createQueryTemplate(productNu
 	s1 := `fields @timestamp, fields.ProductNumber, fields.SerialNumber, fields.bucket_name, fields.bucket_region, fields.key, fields.topic, fields.metadata.date, `
 	s2 := "`fields.metadata.xml-generator-object-path`"
 	s3 := `| filter (ispresent(fields.ProductNumber) and ispresent(fields.SerialNumber) and ispresent(fields.bucket_name) and ispresent(fields.bucket_region) and ispresent(fields.key) and ispresent(fields.topic) and ispresent(fields.metadata.date)`
-	s4 := " and ispresent(`fields.metadata.xml-generator-object-path`))"
-	s5 := `| sort @timestamp asc | limit 10000`
+	s4 := " and ispresent(`fields.metadata.xml-generator-object-path`)"
+	s5 := ` and fields.topic = "json")`
+	s6 := `| sort @timestamp asc | limit 10000`
 
-	return s1 + s2 + s3 + s4 + s5
+	return s1 + s2 + s3 + s4 + s5 + s6
 }
 
 // createInsightsQueryParams creates InsightQueryParameters based on requestQueryParams.

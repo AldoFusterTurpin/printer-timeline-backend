@@ -5,6 +5,7 @@ import (
 
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudJson"
 	myErrors "bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/heartbeat"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/openXml"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/s3storage"
 	"github.com/gin-contrib/cors"
@@ -54,7 +55,7 @@ func SelectHTTPStatus(err error) int {
 // InitRouter initialize a gin router with all the routes for the different endpoints, request types and functions
 // that are responsible of handling each request to specific endpoints.
 func InitRouter(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage.S3Fetcher,
-	xmlsFetcher openXml.OpenXmlsFetcher, cloudJsonsFetcher cloudJson.CloudJsonsFetcher) *gin.Engine {
+	xmlsFetcher openXml.OpenXmlsFetcher, cloudJsonsFetcher cloudJson.CloudJsonsFetcher, heartbeatsFetcher heartbeat.HeartbeatsFetcher) *gin.Engine {
 
 	router := gin.Default()
 	router.Use(cors.Default())
@@ -62,6 +63,7 @@ func InitRouter(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage
 	router.GET("api/object", StorageHandler(s3FetcherUsEast1, s3FetcherUsWest1))
 	router.GET("api/open_xml", OpenXMLHandler(xmlsFetcher))
 	router.GET("api/cloud_json", CloudJsonsHandler(cloudJsonsFetcher))
+	router.GET("api/heart_beat", HeartbeatsHandler(heartbeatsFetcher))
 
 	return router
 }

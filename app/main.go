@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/heartbeat"
+
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/api"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudJson"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudwatch"
@@ -78,11 +80,12 @@ func main() {
 
 	xmlsFetcher := openXml.NewOpenXmlsFetcherImpl(queryExecutor)
 	cloudJsonFetcher := cloudJson.NewCloudJsonsFetcherImpl(queryExecutor)
+	heartbeatsFetcher := heartbeat.NewHeartbeatsFetcherImpl(queryExecutor)
 
 	s3FetcherUsEast1 := createS3Fetcher(sess1)
 	s3FetcherUsWest1 := createS3Fetcher(sess2)
 
-	router := api.InitRouter(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher)
+	router := api.InitRouter(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher)
 
 	if err := router.Run(); err != nil {
 		fmt.Println(err)
