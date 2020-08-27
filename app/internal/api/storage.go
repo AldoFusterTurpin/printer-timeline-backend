@@ -17,10 +17,9 @@ func GetStoredObject(queryParameters map[string]string, s3FetcherUsEast1 s3stora
 		return
 	}
 
-	var bytesResult []byte
-
 	s3FetcherToUSe := selectS3Fetcher(bucketRegion, s3FetcherUsEast1, s3FetcherUsWest1)
 
+	var bytesResult []byte
 	bytesResult, err = s3storage.GetS3Data(*s3FetcherToUSe, bucketName, objectKey)
 
 	status = SelectHTTPStatus(err)

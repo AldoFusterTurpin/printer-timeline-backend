@@ -6,6 +6,7 @@ import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/datafetcher"
 	myErrors "bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/s3storage"
+	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -53,16 +54,43 @@ func SelectHTTPStatus(err error) int {
 // InitRouter initialize a gin router with all the routes for the different endpoints, request types and functions
 // that are responsible of handling each request to specific endpoints.
 func InitRouter(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage.S3Fetcher,
-	xmlsFetcher datafetcher.OpenXmlsFetcher, cloudJsonsFetcher datafetcher.CloudJsonsFetcher,
-	heartbeatsFetcher datafetcher.HeartbeatsFetcher) *gin.Engine {
+	xmlsFetcher datafetcher.DataFetcher, cloudJsonsFetcher datafetcher.DataFetcher,
+	heartbeatsFetcher datafetcher.DataFetcher) *gin.Engine {
 
 	router := gin.Default()
 	router.Use(cors.Default())
 
 	router.GET("api/object", StorageHandler(s3FetcherUsEast1, s3FetcherUsWest1))
-	router.GET("api/open_xml", OpenXMLHandler(xmlsFetcher))
-	router.GET("api/cloud_json", CloudJsonsHandler(cloudJsonsFetcher))
-	router.GET("api/heartbeat", HeartbeatsHandler(heartbeatsFetcher))
+	router.GET("api/open_xml", Handler(xmlsFetcher))
+	router.GET("api/cloud_json", Handler(cloudJsonsFetcher))
+	router.GET("api/heartbeat", Handler(heartbeatsFetcher))
 
 	return router
+}
+
+// GetData is the responsible of obtaining the Jsons based in the queryParameters.
+// This function is independent of the Framework used to create the web server as its input is just
+// a map containing the http query parameters.
+// A cloudJsonFetcher is injected in order to obtain the Jsons.
+func GetData(queryParameters map[string]string, fetcher datafetcher.DataFetcher) (status int, result *cloudwatchlogs.GetQueryResultsOutput, err error) {
+	result, err = fetcher.FetchData(queryParameters)
+	status = SelectHTTPStatus(err)
+	return status, result, err
+
+}
+
+// CloudJsonsHandler is the responsible to handle the request of get the cloud Jsons.
+// It returns a gin handler function that handles all the logic behind the http request.
+// It uses an cloudJsonsFetcher interface that is responsible of fetching the Jsons.
+// It calls GetData because is responsible of obtaiing the Xmls
+func Handler(dataFetcher datafetcher.DataFetcher) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		queryparams := ExtractQueryParams(c)
+		status, result, err := GetData(queryparams, dataFetcher)
+
+		if err != nil {
+			c.JSON(status, err.Error())
+		}
+		c.JSON(status, result)
+	}
 }
