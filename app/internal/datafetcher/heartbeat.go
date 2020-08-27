@@ -1,6 +1,4 @@
-// Package heartbeat provides an interface to obtain the Uploaded HeartBeats based on request parameters.
-// It will handle the requests of Uploaded Heartbeats.
-package heartbeat
+package datafetcher
 
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudwatch"

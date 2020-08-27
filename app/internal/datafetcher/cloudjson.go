@@ -1,6 +1,4 @@
-// Package cloudJson provides an interface to obtain the CloudJsons based on request parameters.
-// It will handle the requests of Jsons created by the Cloud Connector.
-package cloudJson
+package datafetcher
 
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudwatch"

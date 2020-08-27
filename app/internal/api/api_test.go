@@ -5,7 +5,6 @@ import (
 
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/api"
 	myErrors "bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
-	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/openXml/mocks"
 	"github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"

@@ -3,16 +3,15 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/aws/aws-lambda-go/lambda"
 	"os"
 	"strings"
 
-	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/heartbeat"
+	"github.com/aws/aws-lambda-go/lambda"
 
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/api"
-	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudJson"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/awslambda"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudwatch"
-	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/openXml"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/datafetcher"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/s3storage"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -81,9 +80,9 @@ func main() {
 
 	queryExecutor := createQueryExecutor(svc)
 
-	xmlsFetcher := openXml.NewOpenXmlsFetcherImpl(queryExecutor)
-	cloudJsonFetcher := cloudJson.NewCloudJsonsFetcherImpl(queryExecutor)
-	heartbeatsFetcher := heartbeat.NewHeartbeatsFetcherImpl(queryExecutor)
+	xmlsFetcher := datafetcher.NewOpenXmlsFetcherImpl(queryExecutor)
+	cloudJsonFetcher := datafetcher.NewCloudJsonsFetcherImpl(queryExecutor)
+	heartbeatsFetcher := datafetcher.NewHeartbeatsFetcherImpl(queryExecutor)
 
 	s3FetcherUsEast1 := createS3Fetcher(sess1)
 	s3FetcherUsWest1 := createS3Fetcher(sess2)
@@ -96,7 +95,7 @@ func main() {
 			return
 		}
 	} else {
-		lambda.Start(api.CreateLambdaHandler(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher))
+		lambda.Start(awslambda.CreateLambdaHandler(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher))
 	}
 }
 
@@ -105,6 +104,5 @@ func isDevelopment() bool {
 	if ok && strings.EqualFold(dev, "true") {
 		return true
 	}
-
 	return false
 }

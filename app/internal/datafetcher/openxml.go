@@ -1,6 +1,4 @@
-// Package openXml provides an interface to obtain the UploadedOpenXmls based on request parameters.
-// It will handle the requests of Uploaded OpenXmls.
-package openXml
+package datafetcher
 
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudwatch"
