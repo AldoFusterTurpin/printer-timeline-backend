@@ -3,6 +3,7 @@ module bitbucket.org/aldoft/printer-timeline-backend/app
 go 1.14
 
 require (
+	github.com/aws/aws-lambda-go v1.19.1
 	github.com/aws/aws-sdk-go v1.31.5
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.6.3

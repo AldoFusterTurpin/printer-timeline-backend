@@ -10,6 +10,7 @@ import (
 
 // OpenXmlsFetcher obtains the Uploaded OpenXMls based on request query parameters.
 type OpenXmlsFetcher interface {
+	FetchData(requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error)
 	GetUploadedOpenXmls(requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error)
 }
 
@@ -94,4 +95,8 @@ func (openXmlsFetcherImpl OpenXmlsFetcherImpl) GetUploadedOpenXmls(requestQueryP
 		return nil, err
 	}
 	return result, nil
+}
+
+func (openXmlsFetcherImpl OpenXmlsFetcherImpl) FetchData(requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error) {
+	return openXmlsFetcherImpl.GetUploadedOpenXmls(requestQueryParams)
 }

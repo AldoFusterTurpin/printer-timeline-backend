@@ -34,4 +34,6 @@ const (
 	QueryStringMissingBucketName       = constError("query string missing bucket name error")
 	QueryStringMissingObjectKey        = constError("query string missing object key error")
 	QueryStringUnsupportedBucketRegion = constError("query string unsupported bucket region error")
+
+	NotValidEndpoint = constError("invalid endpoint reached")
 )

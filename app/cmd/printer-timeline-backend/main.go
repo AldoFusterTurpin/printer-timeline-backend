@@ -3,7 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/aws/aws-lambda-go/lambda"
 	"os"
+	"strings"
 
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/heartbeat"
 
@@ -20,7 +22,8 @@ import (
 )
 
 func createAWSSession() (sess1 *session.Session, sess2 *session.Session, err error) {
-	envVarName := "AWS_REGION"
+
+	envVarName := "MAIN_AWS_REGION"
 	envVarName2 := "AWS_REGION_BLACK_SEA_BUCKET"
 
 	awsRegion1, ok := os.LookupEnv(envVarName)
@@ -85,10 +88,23 @@ func main() {
 	s3FetcherUsEast1 := createS3Fetcher(sess1)
 	s3FetcherUsWest1 := createS3Fetcher(sess2)
 
-	router := api.InitRouter(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher)
-
-	if err := router.Run(); err != nil {
-		fmt.Println(err)
-		return
+	dev := isDevelopment()
+	if dev {
+		router := api.InitRouter(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher)
+		if err := router.Run(); err != nil {
+			fmt.Println(err)
+			return
+		}
+	} else {
+		lambda.Start(api.CreateLambdaHandler(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher))
 	}
+}
+
+func isDevelopment() bool {
+	dev, ok := os.LookupEnv("DEVELOPMENT")
+	if ok && strings.EqualFold(dev, "true") {
+		return true
+	}
+
+	return false
 }

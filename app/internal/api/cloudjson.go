@@ -2,16 +2,20 @@ package api
 
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudJson"
+	"context"
+	"encoding/json"
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 // GetCloudJsons is the responsible of obtaining the Jsons based in the queryParameters.
 // This function is independent of the Framework used to create the web server as its input is just
 // a map containing the http query parameters.
 // A cloudJsonFetcher is injected in order to obtain the Jsons.
-func GetCloudJsons(queryParameters map[string]string, cloudJsonsFetcher cloudJson.CloudJsonsFetcher) (status int, result *cloudwatchlogs.GetQueryResultsOutput, err error) {
-	result, err = cloudJsonsFetcher.GetCloudJsons(queryParameters)
+func GetCloudJsons(queryParameters map[string]string, fetcher DataFetcher) (status int, result *cloudwatchlogs.GetQueryResultsOutput, err error) {
+	result, err = fetcher.FetchData(queryParameters)
 	status = SelectHTTPStatus(err)
 	return status, result, err
 
@@ -31,4 +35,28 @@ func CloudJsonsHandler(cloudJsonsFetcher cloudJson.CloudJsonsFetcher) gin.Handle
 		}
 		c.JSON(status, result)
 	}
+}
+
+type LambdaHandler func(ctx context.Context, request *events.APIGatewayProxyRequest) (response *events.APIGatewayProxyResponse, err error)
+
+func GenericHandler(fetcher DataFetcher) LambdaHandler {
+	return func(ctx context.Context, request *events.APIGatewayProxyRequest) (response *events.APIGatewayProxyResponse, err error) {
+		queryParams := ExtractQueryParamsNew(request)
+		result, err := fetcher.FetchData(queryParams)
+
+		if err != nil {
+			return newLambdaError(http.StatusInternalServerError, err)
+		}
+
+		jsonResp, err := json.Marshal(result)
+		if err != nil {
+			return newLambdaError(http.StatusInternalServerError, err)
+		}
+
+		return newLambdaOkResponse(jsonResp)
+	}
+}
+
+type DataFetcher interface {
+	FetchData(requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error)
 }

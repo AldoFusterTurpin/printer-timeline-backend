@@ -10,6 +10,7 @@ import (
 
 // CloudJsonsFetcher obtains the Cloud Jsons created by the Cloud Connector based on request query parameters.
 type CloudJsonsFetcher interface {
+	FetchData(requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error)
 	GetCloudJsons(requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error)
 }
 
@@ -113,4 +114,8 @@ func (cloudJsonsFetcherImpl CloudJsonsFetcherImpl) GetCloudJsons(requestQueryPar
 		return nil, err
 	}
 	return result, nil
+}
+
+func (cloudJsonsFetcherImpl CloudJsonsFetcherImpl) FetchData(requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error) {
+	return cloudJsonsFetcherImpl.GetCloudJsons(requestQueryParams)
 }

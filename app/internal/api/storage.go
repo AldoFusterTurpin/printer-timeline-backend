@@ -3,7 +3,11 @@ package api
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/queryparams"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/s3storage"
+	"context"
+	"encoding/json"
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 // GetStoredObject is the responsible of obtaining the stored objects based in the queryParameters.
@@ -51,5 +55,24 @@ func StorageHandler(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3sto
 			c.JSON(status, err.Error())
 		}
 		c.JSON(status, result)
+	}
+}
+
+func StorageHandlerNew(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage.S3Fetcher) LambdaHandler {
+	return func(ctx context.Context, request *events.APIGatewayProxyRequest) (response *events.APIGatewayProxyResponse, err error) {
+		queryParams := ExtractStorageQueryParamsNew(request)
+
+		status, result, err := GetStoredObject(queryParams, s3FetcherUsEast1, s3FetcherUsWest1)
+
+		if err != nil {
+			return newLambdaError(status, err)
+		}
+
+		jsonResp, err := json.Marshal(result)
+		if err != nil {
+			return newLambdaError(http.StatusInternalServerError, err)
+		}
+
+		return newLambdaOkResponse(jsonResp)
 	}
 }

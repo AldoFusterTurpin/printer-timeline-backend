@@ -10,6 +10,7 @@ import (
 
 // HeartbeatsFetcher obtains the Uploaded Heartbeats based on request query parameters.
 type HeartbeatsFetcher interface {
+	FetchData(requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error)
 	GetUploadedHeartbeats(requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error)
 }
 
@@ -94,4 +95,8 @@ func (heartbeatsFetcherImpl HeartbeatsFetcherImpl) GetUploadedHeartbeats(request
 		return nil, err
 	}
 	return result, nil
+}
+
+func (heartbeatsFetcherImpl HeartbeatsFetcherImpl) FetchData(requestQueryParams map[string]string) (*cloudwatchlogs.GetQueryResultsOutput, error) {
+	return heartbeatsFetcherImpl.GetUploadedHeartbeats(requestQueryParams)
 }
