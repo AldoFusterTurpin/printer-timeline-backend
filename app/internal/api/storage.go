@@ -3,7 +3,6 @@ package api
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/queryparams"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/s3storage"
-	"github.com/gin-gonic/gin"
 )
 
 // GetStoredObject is the responsible of obtaining the stored objects based in the queryParameters.
@@ -34,21 +33,4 @@ func selectS3Fetcher(bucketRegion string, s3FetcherUsEast1 s3storage.S3Fetcher, 
 		return &s3FetcherUsWest1
 	}
 	return nil
-}
-
-// StorageHandler is the responsible to handle the request of get a specific object.
-// It returns a gin handler function that handles all the logic behind the http request.
-// It uses an s3fetcher interface that is responsible of fetching the stored objects (Openxml, CloudJson, HB, RTA, etc.).
-// It calls GetStoredObject that is responsible of obtaiing the objects.
-func StorageHandler(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage.S3Fetcher) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		queryParams := ExtractStorageQueryParams(c)
-
-		status, result, err := GetStoredObject(queryParams, s3FetcherUsEast1, s3FetcherUsWest1)
-
-		if err != nil {
-			c.JSON(status, err.Error())
-		}
-		c.JSON(status, result)
-	}
 }

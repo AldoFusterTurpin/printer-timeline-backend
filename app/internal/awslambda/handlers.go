@@ -12,8 +12,12 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
+// LambdaHandler is the function fulfilling the AWS Lambda handler signature.
+// It is a function responsible of handling the request.
 type LambdaHandler func(ctx context.Context, request *events.APIGatewayProxyRequest) (response *events.APIGatewayProxyResponse, err error)
 
+// CreateLambdaHandler is the responsible of extracting the request path (endpoint) and call the appropiate
+// handler to handle that endpoint.
 func CreateLambdaHandler(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage.S3Fetcher,
 	xmlsFetcher datafetcher.DataFetcher, cloudJsonsFetcher datafetcher.DataFetcher,
 	heartbeatsFetcher datafetcher.DataFetcher) LambdaHandler {

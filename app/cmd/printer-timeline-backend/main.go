@@ -8,10 +8,10 @@ import (
 
 	"github.com/aws/aws-lambda-go/lambda"
 
-	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/api"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/awslambda"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudwatch"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/datafetcher"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/gin"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/s3storage"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -89,7 +89,7 @@ func main() {
 
 	dev := isDevelopment()
 	if dev {
-		router := api.InitRouter(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher)
+		router := gin.InitRouter(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher)
 		if err := router.Run(); err != nil {
 			fmt.Println(err)
 			return

@@ -1,5 +1,5 @@
-// Package queryparams  extracts the query parameters from the http requests.
-// It handles the logic to decide if there are any errors in the requests based in the query parameters.
+// Package queryparams  handles the logic to decide if there are any errors in the requests based in the query parameters.
+// Is the controller of the query parameters.
 package queryparams
 
 import "bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
