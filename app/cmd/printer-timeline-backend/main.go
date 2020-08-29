@@ -83,19 +83,20 @@ func main() {
 	xmlsFetcher := datafetcher.NewOpenXmlsFetcherImpl(queryExecutor)
 	cloudJsonFetcher := datafetcher.NewCloudJsonsFetcherImpl(queryExecutor)
 	heartbeatsFetcher := datafetcher.NewHeartbeatsFetcherImpl(queryExecutor)
+	rtaFetcher := datafetcher.NewRtaFetcherImpl(queryExecutor)
 
 	s3FetcherUsEast1 := createS3Fetcher(sess1)
 	s3FetcherUsWest1 := createS3Fetcher(sess2)
 
 	dev := isDevelopment()
 	if dev {
-		router := gin.InitRouter(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher)
+		router := gin.InitRouter(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher, rtaFetcher)
 		if err := router.Run(); err != nil {
 			fmt.Println(err)
 			return
 		}
 	} else {
-		lambda.Start(awslambda.CreateLambdaHandler(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher))
+		lambda.Start(awslambda.CreateLambdaHandler(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher, rtaFetcher))
 	}
 }
 
