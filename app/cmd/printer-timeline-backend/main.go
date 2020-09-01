@@ -80,10 +80,10 @@ func main() {
 
 	queryExecutor := createQueryExecutor(svc)
 
-	xmlsFetcher := datafetcher.NewOpenXmlsFetcherImpl(queryExecutor)
-	cloudJsonFetcher := datafetcher.NewCloudJsonsFetcherImpl(queryExecutor)
-	heartbeatsFetcher := datafetcher.NewHeartbeatsFetcherImpl(queryExecutor)
-	rtaFetcher := datafetcher.NewRtaFetcherImpl(queryExecutor)
+	xmlsFetcher := datafetcher.NewOpenXmlsFetcher(queryExecutor)
+	cloudJsonFetcher := datafetcher.NewCloudJsonsFetcher(queryExecutor)
+	heartbeatsFetcher := datafetcher.NewHeartbeatsFetcher(queryExecutor)
+	rtaFetcher := datafetcher.NewRtaFetcher(queryExecutor)
 
 	s3FetcherUsEast1 := createS3Fetcher(sess1)
 	s3FetcherUsWest1 := createS3Fetcher(sess2)

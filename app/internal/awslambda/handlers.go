@@ -20,7 +20,7 @@ type LambdaHandler func(ctx context.Context, request *events.APIGatewayProxyRequ
 // handler to handle that endpoint.
 func CreateLambdaHandler(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage.S3Fetcher,
 	xmlsFetcher datafetcher.DataFetcher, cloudJsonsFetcher datafetcher.DataFetcher,
-	heartbeatsFetcher datafetcher.DataFetcher, rtaFetcher datafetcher.RtaFetcher) LambdaHandler {
+	heartbeatsFetcher datafetcher.DataFetcher, rtaFetcher datafetcher.DataFetcher) LambdaHandler {
 
 	return func(ctx context.Context, request *events.APIGatewayProxyRequest) (response *events.APIGatewayProxyResponse, err error) {
 		var handler LambdaHandler

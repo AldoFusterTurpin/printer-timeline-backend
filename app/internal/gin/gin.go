@@ -69,7 +69,7 @@ func StorageHandler(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3sto
 // that are responsible of handling each request to specific endpoints.
 func InitRouter(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage.S3Fetcher,
 	xmlsFetcher datafetcher.DataFetcher, cloudJsonsFetcher datafetcher.DataFetcher,
-	heartbeatsFetcher datafetcher.DataFetcher, rtaFetcher datafetcher.RtaFetcher) *gin.Engine {
+	heartbeatsFetcher datafetcher.DataFetcher, rtaFetcher datafetcher.DataFetcher) *gin.Engine {
 
 	router := gin.Default()
 	router.Use(cors.Default())
