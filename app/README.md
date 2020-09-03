@@ -19,13 +19,11 @@ The file dev.env contains the environment variables.
 
 Set env variable DEVELOPMENT=true in file dev.env when whant to use development mode (it will create a local server at http://0.0.0.0:8080).
 
-Set env variable DEVELOPMENT=false in file dev.env when whant to deploy it in AWS, it will not run in a local server as it will be expecting to execute in a AWS Lambda.
+Set env variable DEVELOPMENT=false in file dev.env when whant to deploy it to AWS, it will not run in a local server. Instead it will be expecting to execute in an AWS Lambda.
 
-Yo don't need to modify the other environment variables.
+Set env variable MAX_TIME_DIFF_IN_MINUTES= with the value of the max difference between start time and end time for the queries. It can't be greater than twoo weeks (condition forced in the code). It has that limit to prevent expensive time scans.
 
-Assuming you are in the root of the project...
-
-* Summary of set up (check that you are at the root of th project before executing the commands because some commands include a 'cd' as part of the command itself 🧐).
+* Summary of set up (check that you are at the root of the project before executing the commands because some commands include a 'cd' as part of the command itself 🧐).
 
 First export the environment variables of dev.env. 
 

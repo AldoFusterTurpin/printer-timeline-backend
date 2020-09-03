@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
+	initConfig "bitbucket.org/aldoft/printer-timeline-backend/app/internal/init"
 )
 
 // stringEpochToUTCTime converts an epoch string to the corresponding time in UTC.
@@ -18,7 +19,7 @@ func stringEpochToUTCTime(s string) (time.Time, error) {
 	return t.In(loc), nil
 }
 
-// processOffset returns and start time and end time based in offsetUnits and offsetValue.
+// processOffset returns an start time and end time based in offsetUnits and offsetValue.
 // It is used for the relative time in the api.
 // It also returns an error if any.
 func processOffset(offsetUnits, offsetValue string) (startTime time.Time, endTime time.Time, err error) {
@@ -33,7 +34,7 @@ func processOffset(offsetUnits, offsetValue string) (startTime time.Time, endTim
 
 	var duration time.Duration
 	if offsetUnits == "minutes" {
-		if offsetValueInt > 60 {
+		if offsetValueInt > initConfig.GetMaxTimeDiffInMinutes() {
 			return time.Time{}, time.Time{}, errors.QueryStringUnsupportedOffsetValue
 		}
 		duration = time.Minute
@@ -97,7 +98,7 @@ func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Ti
 	}
 
 	diff := endTime.Sub(startTime)
-	if diff.Minutes() > 60 {
+	if diff.Minutes() > float64(initConfig.GetMaxTimeDiffInMinutes()) {
 		return time.Time{}, time.Time{}, errors.QueryStringTimeDifferenceTooBig
 	}
 	if diff.Minutes() < 0 {
