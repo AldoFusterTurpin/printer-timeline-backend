@@ -21,7 +21,10 @@ Set env variable DEVELOPMENT=true in file dev.env when whant to use development 
 
 Set env variable DEVELOPMENT=false in file dev.env when whant to deploy it to AWS, it will not run in a local server. Instead it will be expecting to execute in an AWS Lambda.
 
-Set env variable MAX_TIME_DIFF_IN_MINUTES= with the value of the max difference between start time and end time for the queries. It can't be greater than twoo weeks (condition forced in the code). It has that limit to prevent expensive time scans.
+Set env variable MAX_TIME_DIFF_IN_MINUTES with the value of the max difference between start time and end time that you want to allow for the queries. 
+
+Nevertheless, it also has a limit hardcoded in init.go (setMaxTimeDiffInMinutes()). It has that limit to prevent expensive query scans.
+If MAX_TIME_DIFF_IN_MINUTES is not set or it is not a valid integer, the default value will be 60 minutes.
 
 * Summary of set up (check that you are at the root of the project before executing the commands because some commands include a 'cd' as part of the command itself 🧐).
 

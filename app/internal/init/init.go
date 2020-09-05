@@ -33,10 +33,11 @@ func setMaxTimeDiffInMinutes() int {
 	}
 
 	// the maximum time difference allowed for queries.
-	twoWeeksInMinutes := 20160
-	if intDiff > twoWeeksInMinutes {
-		return twoWeeksInMinutes
+	twoDaysInMinutes := 2880
+	if intDiff > twoDaysInMinutes {
+		return twoDaysInMinutes
 	}
+
 	return intDiff
 }
 
