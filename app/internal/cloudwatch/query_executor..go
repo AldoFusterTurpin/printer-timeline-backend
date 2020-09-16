@@ -45,7 +45,6 @@ func (queryExecutor QueryExecutorImpl) ExecuteQuery(insightsQueryParams Insights
 
 	startQueryOutput, err := queryExecutor.svc.StartQuery(startQueryInput)
 	if err != nil {
-		//fmt.Println(err.Error())
 		return nil, err
 	}
 
@@ -54,14 +53,12 @@ func (queryExecutor QueryExecutorImpl) ExecuteQuery(insightsQueryParams Insights
 	}
 	queryResultsOutput, err := queryExecutor.svc.GetQueryResults(queryResultsInput)
 	if err != nil {
-		//fmt.Println(err.Error())
 		return nil, err
 	}
 	for *queryResultsOutput.Status == cloudwatchlogs.QueryStatusRunning || *queryResultsOutput.Status == cloudwatchlogs.QueryStatusScheduled {
 		fmt.Println("INFO: Waiting query to finish")
 		queryResultsOutput, err = queryExecutor.svc.GetQueryResults(queryResultsInput)
 		if err != nil {
-			//fmt.Println(err.Error())
 			return nil, err
 		}
 	}

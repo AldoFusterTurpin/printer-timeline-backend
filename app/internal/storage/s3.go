@@ -1,5 +1,5 @@
-// Package s3storage is the responsible of fetching data (single files) from S3
-package s3storage
+// Package storage is the responsible of fetching data (single files) from S3
+package storage
 
 import (
 	"bytes"

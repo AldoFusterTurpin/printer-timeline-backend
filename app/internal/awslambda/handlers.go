@@ -8,8 +8,16 @@ import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/api"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/datafetcher"
 	myErrors "bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
-	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/s3storage"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/storage"
 	"github.com/aws/aws-lambda-go/events"
+)
+
+const (
+	CloudJsonPath     = "api/cloud_json"
+	OpenXMLPath       = "api/open_xml"
+	HeartbeatPath     = "api/heartbeat"
+	RTAPath           = "api/rta"
+	StorageObjectPath = "api/object"
 )
 
 // LambdaHandler is the function fulfilling the AWS Lambda handler signature.
@@ -18,7 +26,7 @@ type LambdaHandler func(ctx context.Context, request *events.APIGatewayProxyRequ
 
 // CreateLambdaHandler is the responsible of extracting the request path (endpoint) and call the appropiate
 // handler to handle that endpoint.
-func CreateLambdaHandler(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage.S3Fetcher,
+func CreateLambdaHandler(s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage.S3Fetcher,
 	xmlsFetcher datafetcher.DataFetcher, cloudJsonsFetcher datafetcher.DataFetcher,
 	heartbeatsFetcher datafetcher.DataFetcher, rtaFetcher datafetcher.DataFetcher) LambdaHandler {
 
@@ -26,15 +34,15 @@ func CreateLambdaHandler(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 
 		var handler LambdaHandler
 
 		switch request.Path {
-		case "api/cloud_json":
+		case CloudJsonPath:
 			handler = GenericHandler(cloudJsonsFetcher)
-		case "api/open_xml":
+		case OpenXMLPath:
 			handler = GenericHandler(xmlsFetcher)
-		case "api/heartbeat":
+		case HeartbeatPath:
 			handler = GenericHandler(heartbeatsFetcher)
-		case "api/rta":
+		case RTAPath:
 			handler = GenericHandler(rtaFetcher)
-		case "api/object":
+		case StorageObjectPath:
 			handler = StorageHandler(s3FetcherUsEast1, s3FetcherUsWest1)
 		default:
 			return newLambdaError(http.StatusBadRequest, myErrors.NotValidEndpoint)
@@ -62,7 +70,7 @@ func GenericHandler(fetcher datafetcher.DataFetcher) LambdaHandler {
 	}
 }
 
-func StorageHandler(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage.S3Fetcher) LambdaHandler {
+func StorageHandler(s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage.S3Fetcher) LambdaHandler {
 	return func(ctx context.Context, request *events.APIGatewayProxyRequest) (response *events.APIGatewayProxyResponse, err error) {
 		queryParams := ExtractStorageQueryParams(request)
 

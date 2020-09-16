@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
-	initConfig "bitbucket.org/aldoft/printer-timeline-backend/app/internal/init"
 )
 
 // stringEpochToUTCTime converts an epoch string to the corresponding time in UTC.
@@ -22,7 +21,7 @@ func stringEpochToUTCTime(s string) (time.Time, error) {
 // processOffset returns an start time and end time based in offsetUnits and offsetValue.
 // It is used for the relative time in the api.
 // It also returns an error if any.
-func processOffset(offsetUnits, offsetValue string) (startTime time.Time, endTime time.Time, err error) {
+func processOffset(offsetUnits, offsetValue string, maxTimeDiffInMinutes int) (startTime time.Time, endTime time.Time, err error) {
 	if offsetValue == "" {
 		return time.Time{}, time.Time{}, errors.QueryStringMissingOffsetValue
 	}
@@ -34,7 +33,7 @@ func processOffset(offsetUnits, offsetValue string) (startTime time.Time, endTim
 
 	var duration time.Duration
 	if offsetUnits == "minutes" {
-		if offsetValueInt > initConfig.GetMaxTimeDiffInMinutes() {
+		if offsetValueInt > maxTimeDiffInMinutes {
 			return time.Time{}, time.Time{}, errors.QueryStringUnsupportedOffsetValue
 		}
 		duration = time.Minute
@@ -58,7 +57,7 @@ func processOffset(offsetUnits, offsetValue string) (startTime time.Time, endTim
 
 // processRelativeTime receives and start and end time as strings, ofsset untis and value and returns the appropiate start and end time.
 // It also returns an error if any.
-func processRelativeTime(startTimeEpoch, endTimeEpoch, offsetUnits, offsetValue string) (startTime time.Time, endTime time.Time, err error) {
+func processRelativeTime(startTimeEpoch, endTimeEpoch, offsetUnits, offsetValue string, maxTimeDiffInMinutes int) (startTime time.Time, endTime time.Time, err error) {
 	if startTimeEpoch != "" {
 		return time.Time{}, time.Time{}, errors.QueryStringStartTimeAppears
 	}
@@ -74,12 +73,12 @@ func processRelativeTime(startTimeEpoch, endTimeEpoch, offsetUnits, offsetValue 
 	if offsetUnits != "minutes" && offsetUnits != "seconds" {
 		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedOffsetUnits
 	}
-	return processOffset(offsetUnits, offsetValue)
+	return processOffset(offsetUnits, offsetValue, maxTimeDiffInMinutes)
 }
 
 // processRelativeTime receives and start and end timeas strings and returns the appropiate start and end time variables.
 // It also returns an error if any.
-func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Time, endTime time.Time, err error) {
+func processAbsoluteTime(startTimeEpoch, endTimeEpoch string, maxTimeDiffInMinutes int) (startTime time.Time, endTime time.Time, err error) {
 	if startTimeEpoch == "" {
 		return time.Time{}, time.Time{}, errors.QueryStringMissingStartTime
 	}
@@ -98,7 +97,7 @@ func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Ti
 	}
 
 	diff := endTime.Sub(startTime)
-	if diff.Minutes() > float64(initConfig.GetMaxTimeDiffInMinutes()) {
+	if diff.Minutes() > float64(maxTimeDiffInMinutes) {
 		return time.Time{}, time.Time{}, errors.QueryStringTimeDifferenceTooBig
 	}
 	if diff.Minutes() < 0 {
@@ -111,7 +110,7 @@ func processAbsoluteTime(startTimeEpoch, endTimeEpoch string) (startTime time.Ti
 // ExtractTimeRange extracts from the query parameters the appropiate start time and end time based in some
 // logic using start_time, end_time, offset_units and offset_value.
 // It also returns an error if any.
-func ExtractTimeRange(queryParameters map[string]string) (startTime time.Time, endTime time.Time, err error) {
+func ExtractTimeRange(queryParameters map[string]string, maxTimeDiffInMinutes int) (startTime time.Time, endTime time.Time, err error) {
 	timeType := queryParameters["time_type"]
 	if timeType == "" {
 		return time.Time{}, time.Time{}, errors.QueryStringMissingTimeRangeType
@@ -124,14 +123,14 @@ func ExtractTimeRange(queryParameters map[string]string) (startTime time.Time, e
 		offsetUnits := queryParameters["offset_units"]
 		offsetValue := queryParameters["offset_value"]
 
-		startTime, endTime, err = processRelativeTime(startTimeEpoch, endTimeEpoch, offsetUnits, offsetValue)
+		startTime, endTime, err = processRelativeTime(startTimeEpoch, endTimeEpoch, offsetUnits, offsetValue, maxTimeDiffInMinutes)
 		if err != nil {
 			return time.Time{}, time.Time{}, err
 		}
 		return startTime, endTime, nil
 
 	case "absolute":
-		startTime, endTime, err = processAbsoluteTime(startTimeEpoch, endTimeEpoch)
+		startTime, endTime, err = processAbsoluteTime(startTimeEpoch, endTimeEpoch, maxTimeDiffInMinutes)
 		if err != nil {
 			return time.Time{}, time.Time{}, err
 		}

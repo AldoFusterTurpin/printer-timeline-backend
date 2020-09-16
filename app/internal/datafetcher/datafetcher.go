@@ -3,6 +3,7 @@ package datafetcher
 
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudwatch"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/configs"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/queryparams"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 )
@@ -18,7 +19,7 @@ type DataFetcher interface {
 // createInsightsQueryParams creates InsightQueryParameters based on requestQueryParams and the dataFetcher parameter.
 // The returned InsightQueryParameters will be used by a QueryExecutor to execute the query. It also returns an error, if any.
 func createInsightsQueryParams(requestQueryParams map[string]string, dataFetcher DataFetcher) (insightsQueryParams cloudwatch.InsightsQueryParams, err error) {
-	startTime, endTime, err := queryparams.ExtractTimeRange(requestQueryParams)
+	startTime, endTime, err := queryparams.ExtractTimeRange(requestQueryParams, configs.GetMaxTimeDiffInMinutes())
 	if err != nil {
 		return
 	}

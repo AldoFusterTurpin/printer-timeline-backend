@@ -3,7 +3,7 @@ package gin
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/api"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/datafetcher"
-	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/s3storage"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/storage"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -52,7 +52,7 @@ func Handler(dataFetcher datafetcher.DataFetcher) gin.HandlerFunc {
 // It returns a gin handler function that handles all the logic behind the http request.
 // It uses an s3fetcher interface that is responsible of fetching the stored objects (Openxml, CloudJson, HB, RTA, etc.).
 // It calls GetStoredObject that is responsible of obtaiing the objects.
-func StorageHandler(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage.S3Fetcher) gin.HandlerFunc {
+func StorageHandler(s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage.S3Fetcher) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		queryParams := ExtractGinStorageQueryParams(c)
 
@@ -67,7 +67,7 @@ func StorageHandler(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3sto
 
 // InitRouter initialize a gin router with all the routes for the different endpoints, request types and functions
 // that are responsible of handling each request to specific endpoints.
-func InitRouter(s3FetcherUsEast1 s3storage.S3Fetcher, s3FetcherUsWest1 s3storage.S3Fetcher,
+func InitRouter(s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage.S3Fetcher,
 	xmlsFetcher datafetcher.DataFetcher, cloudJsonsFetcher datafetcher.DataFetcher,
 	heartbeatsFetcher datafetcher.DataFetcher, rtaFetcher datafetcher.DataFetcher) *gin.Engine {
 

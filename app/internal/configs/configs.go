@@ -1,5 +1,5 @@
-// Package init provides the initialization of some parameters
-package init
+// Package configs provides the initialization of some parameters
+package configs
 
 import (
 	"errors"

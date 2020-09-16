@@ -7,10 +7,10 @@ import (
 
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/awslambda"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/cloudwatch"
+	initConfig "bitbucket.org/aldoft/printer-timeline-backend/app/internal/configs"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/datafetcher"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/gin"
-	initConfig "bitbucket.org/aldoft/printer-timeline-backend/app/internal/init"
-	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/s3storage"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/storage"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -25,7 +25,7 @@ func createQueryExecutor(svc *cloudwatchlogs.CloudWatchLogs) cloudwatch.QueryExe
 	return cloudwatch.NewQueryExecutorImpl(svc)
 }
 
-func createS3Fetcher(sess *session.Session) s3storage.S3Fetcher {
+func createS3Fetcher(sess *session.Session) storage.S3Fetcher {
 	svc := s3.New(sess)
 	return svc
 }

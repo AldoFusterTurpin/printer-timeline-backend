@@ -8,6 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 )
 
+//go:generate mockgen -source=../datafetcher/datafetcher.go -destination=../datafetcher/mocks/datafetcher.go -package=mocks
+
 // SelectHTTPStatus returns the appropiate http status based on the error passed as a parameter.
 func SelectHTTPStatus(err error) int {
 	switch err {
