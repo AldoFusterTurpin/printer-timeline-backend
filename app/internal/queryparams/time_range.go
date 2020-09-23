@@ -3,8 +3,6 @@ package queryparams
 import (
 	"strconv"
 	"time"
-
-	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
 )
 
 // stringEpochToUTCTime converts an epoch string to the corresponding time in UTC.
@@ -23,30 +21,30 @@ func stringEpochToUTCTime(s string) (time.Time, error) {
 // It also returns an error if any.
 func processOffset(offsetUnits, offsetValue string, maxTimeDiffInMinutes int) (startTime time.Time, endTime time.Time, err error) {
 	if offsetValue == "" {
-		return time.Time{}, time.Time{}, errors.QueryStringMissingOffsetValue
+		return time.Time{}, time.Time{}, ErrorQueryStringMissingOffsetValue
 	}
 
 	offsetValueInt, err := strconv.Atoi(offsetValue)
 	if err != nil {
-		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedOffsetValue
+		return time.Time{}, time.Time{}, ErrorQueryStringUnsupportedOffsetValue
 	}
 
 	var duration time.Duration
 	if offsetUnits == "minutes" {
 		if offsetValueInt > maxTimeDiffInMinutes {
-			return time.Time{}, time.Time{}, errors.QueryStringUnsupportedOffsetValue
+			return time.Time{}, time.Time{}, ErrorQueryStringUnsupportedOffsetValue
 		}
 		duration = time.Minute
 
 	} else if offsetUnits == "seconds" {
 		if offsetValueInt > 3600 {
-			return time.Time{}, time.Time{}, errors.QueryStringUnsupportedOffsetValue
+			return time.Time{}, time.Time{}, ErrorQueryStringUnsupportedOffsetValue
 		}
 		duration = time.Second
 	}
 
 	if offsetValueInt < 1 {
-		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedOffsetValue
+		return time.Time{}, time.Time{}, ErrorQueryStringUnsupportedOffsetValue
 	}
 
 	endTime = time.Now()
@@ -59,19 +57,19 @@ func processOffset(offsetUnits, offsetValue string, maxTimeDiffInMinutes int) (s
 // It also returns an error if any.
 func processRelativeTime(startTimeEpoch, endTimeEpoch, offsetUnits, offsetValue string, maxTimeDiffInMinutes int) (startTime time.Time, endTime time.Time, err error) {
 	if startTimeEpoch != "" {
-		return time.Time{}, time.Time{}, errors.QueryStringStartTimeAppears
+		return time.Time{}, time.Time{}, ErrorQueryStringStartTimeAppears
 	}
 
 	if endTimeEpoch != "" {
-		return time.Time{}, time.Time{}, errors.QueryStringEndTimeAppears
+		return time.Time{}, time.Time{}, ErrorQueryStringEndTimeAppears
 	}
 
 	if offsetUnits == "" {
-		return time.Time{}, time.Time{}, errors.QueryStringMissingOffsetUnits
+		return time.Time{}, time.Time{}, ErrorQueryStringMissingOffsetUnits
 	}
 
 	if offsetUnits != "minutes" && offsetUnits != "seconds" {
-		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedOffsetUnits
+		return time.Time{}, time.Time{}, ErrorQueryStringUnsupportedOffsetUnits
 	}
 	return processOffset(offsetUnits, offsetValue, maxTimeDiffInMinutes)
 }
@@ -80,28 +78,28 @@ func processRelativeTime(startTimeEpoch, endTimeEpoch, offsetUnits, offsetValue 
 // It also returns an error if any.
 func processAbsoluteTime(startTimeEpoch, endTimeEpoch string, maxTimeDiffInMinutes int) (startTime time.Time, endTime time.Time, err error) {
 	if startTimeEpoch == "" {
-		return time.Time{}, time.Time{}, errors.QueryStringMissingStartTime
+		return time.Time{}, time.Time{}, ErrorQueryStringMissingStartTime
 	}
 
 	startTime, err = stringEpochToUTCTime(startTimeEpoch)
 	if err != nil {
-		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedStartTime
+		return time.Time{}, time.Time{}, ErrorQueryStringUnsupportedStartTime
 	}
 
 	if endTimeEpoch == "" {
-		return time.Time{}, time.Time{}, errors.QueryStringMissingEndTime
+		return time.Time{}, time.Time{}, ErrorQueryStringMissingEndTime
 	}
 	endTime, err = stringEpochToUTCTime(endTimeEpoch)
 	if err != nil {
-		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedEndTime
+		return time.Time{}, time.Time{}, ErrorQueryStringUnsupportedEndTime
 	}
 
 	diff := endTime.Sub(startTime)
 	if diff.Minutes() > float64(maxTimeDiffInMinutes) {
-		return time.Time{}, time.Time{}, errors.QueryStringTimeDifferenceTooBig
+		return time.Time{}, time.Time{}, ErrorQueryStringTimeDifferenceTooBig
 	}
 	if diff.Minutes() < 0 {
-		return time.Time{}, time.Time{}, errors.QueryStringEndTimePreviousThanStartTime
+		return time.Time{}, time.Time{}, ErrorQueryStringEndTimePreviousThanStartTime
 	}
 
 	return startTime, endTime, nil
@@ -113,7 +111,7 @@ func processAbsoluteTime(startTimeEpoch, endTimeEpoch string, maxTimeDiffInMinut
 func ExtractTimeRange(queryParameters map[string]string, maxTimeDiffInMinutes int) (startTime time.Time, endTime time.Time, err error) {
 	timeType := queryParameters["time_type"]
 	if timeType == "" {
-		return time.Time{}, time.Time{}, errors.QueryStringMissingTimeRangeType
+		return time.Time{}, time.Time{}, ErrorQueryStringMissingTimeRangeType
 	}
 
 	startTimeEpoch := queryParameters["start_time"]
@@ -137,6 +135,6 @@ func ExtractTimeRange(queryParameters map[string]string, maxTimeDiffInMinutes in
 		return startTime, endTime, nil
 
 	default:
-		return time.Time{}, time.Time{}, errors.QueryStringUnsupportedTimeRangeType
+		return time.Time{}, time.Time{}, ErrorQueryStringUnsupportedTimeRangeType
 	}
 }

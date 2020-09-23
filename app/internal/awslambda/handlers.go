@@ -1,23 +1,17 @@
 package awslambda
 
 import (
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/configs"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/db"
+	. "bitbucket.org/aldoft/printer-timeline-backend/app/internal/queryparams"
 	"context"
 	"encoding/json"
 	"net/http"
 
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/api"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/datafetcher"
-	myErrors "bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/storage"
 	"github.com/aws/aws-lambda-go/events"
-)
-
-const (
-	CloudJsonPath     = "api/cloud_json"
-	OpenXMLPath       = "api/open_xml"
-	HeartbeatPath     = "api/heartbeat"
-	RTAPath           = "api/rta"
-	StorageObjectPath = "api/object"
 )
 
 // LambdaHandler is the function fulfilling the AWS Lambda handler signature.
@@ -28,24 +22,27 @@ type LambdaHandler func(ctx context.Context, request *events.APIGatewayProxyRequ
 // handler to handle that endpoint.
 func CreateLambdaHandler(s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage.S3Fetcher,
 	xmlsFetcher datafetcher.DataFetcher, cloudJsonsFetcher datafetcher.DataFetcher,
-	heartbeatsFetcher datafetcher.DataFetcher, rtaFetcher datafetcher.DataFetcher) LambdaHandler {
+	heartbeatsFetcher datafetcher.DataFetcher, rtaFetcher datafetcher.DataFetcher,
+	subscriptionFetcher db.PrinterSubscriptionFetcher) LambdaHandler {
 
 	return func(ctx context.Context, request *events.APIGatewayProxyRequest) (response *events.APIGatewayProxyResponse, err error) {
 		var handler LambdaHandler
 
 		switch request.Path {
-		case CloudJsonPath:
+		case configs.CloudJsonPath:
 			handler = GenericHandler(cloudJsonsFetcher)
-		case OpenXMLPath:
+		case configs.OpenXMLPath:
 			handler = GenericHandler(xmlsFetcher)
-		case HeartbeatPath:
+		case configs.HeartbeatPath:
 			handler = GenericHandler(heartbeatsFetcher)
-		case RTAPath:
+		case configs.RTAPath:
 			handler = GenericHandler(rtaFetcher)
-		case StorageObjectPath:
+		case configs.StorageObjectPath:
 			handler = StorageHandler(s3FetcherUsEast1, s3FetcherUsWest1)
+		case configs.SubscriptionsPath:
+			handler = SubscriptionHandler(subscriptionFetcher)
 		default:
-			return newLambdaError(http.StatusBadRequest, myErrors.NotValidEndpoint)
+			return newLambdaError(http.StatusBadRequest, ErrorNotValidEndpoint)
 		}
 
 		return handler(ctx, request)
@@ -76,6 +73,24 @@ func StorageHandler(s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage
 
 		status, result, err := api.GetStoredObject(queryParams, s3FetcherUsEast1, s3FetcherUsWest1)
 
+		if err != nil {
+			return newLambdaError(status, err)
+		}
+
+		jsonResp, err := json.Marshal(result)
+		if err != nil {
+			return newLambdaError(http.StatusInternalServerError, err)
+		}
+
+		return newLambdaOkResponse(jsonResp)
+	}
+}
+
+func SubscriptionHandler(subscriptionFetcher db.PrinterSubscriptionFetcher) LambdaHandler {
+	return func(ctx context.Context, request *events.APIGatewayProxyRequest) (response *events.APIGatewayProxyResponse, err error) {
+		queryParams := ExtractStorageQueryParams(request)
+
+		status, result, err := api.GetPrinterSubscriptions(queryParams, subscriptionFetcher)
 		if err != nil {
 			return newLambdaError(status, err)
 		}

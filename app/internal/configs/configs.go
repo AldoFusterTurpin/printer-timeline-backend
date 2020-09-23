@@ -11,6 +11,23 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 )
 
+const (
+	CloudJsonPath     = "api/cloud_json"
+	OpenXMLPath       = "api/open_xml"
+	HeartbeatPath     = "api/heartbeat"
+	RTAPath           = "api/rta"
+	StorageObjectPath = "api/object"
+	SubscriptionsPath = "api/subscriptions"
+
+	ProductNumberQueryParam = "pn"
+	SerialNumberQueryParam  = "sn"
+	TimeTypeQueryParam      = "time_type"
+	OffsetUnitsQueryParam   = "offset_units"
+	OffsetValueQueryParam   = "offset_value"
+	StartTimeQueryParam     = "start_time"
+	EndTimeQueryParam       = "end_time"
+)
+
 var (
 	maxTimeDiffInMinutes int
 )

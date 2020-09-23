@@ -1,7 +1,5 @@
 package queryparams
 
-import "bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
-
 const (
 	UsEast1S3Region = "US_EAST_1"
 	UsWest1S3Region = "US_WEST_1"
@@ -15,22 +13,22 @@ func ExtractS3Info(queryParameters map[string]string) (bucketRegion string, buck
 	objectKey = queryParameters["object_key"]
 
 	if bucketRegion == "" {
-		err = errors.QueryStringMissingBucketRegion
+		err = ErrorQueryStringMissingBucketRegion
 		return
 	}
 
 	if bucketRegion != UsEast1S3Region && bucketRegion != UsWest1S3Region {
-		err = errors.QueryStringUnsupportedBucketRegion
+		err = ErrorQueryStringUnsupportedBucketRegion
 		return
 	}
 
 	if bucketName == "" {
-		err = errors.QueryStringMissingBucketName
+		err = ErrorQueryStringMissingBucketName
 		return
 	}
 
 	if objectKey == "" {
-		err = errors.QueryStringMissingObjectKey
+		err = ErrorQueryStringMissingObjectKey
 		return
 	}
 

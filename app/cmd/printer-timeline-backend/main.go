@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/db"
 	"fmt"
-
 	"github.com/aws/aws-lambda-go/lambda"
 
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/awslambda"
@@ -55,14 +55,19 @@ func main() {
 	s3FetcherUsEast1 := createS3Fetcher(sess1)
 	s3FetcherUsWest1 := createS3Fetcher(sess2)
 
+	printerSubscriptionFetcher, err := db.NewCCPrinterSubscriptionCollectionWithSession(sess1)
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	dev := initConfig.IsDevelopment()
 	if dev {
-		router := gin.InitRouter(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher, rtaFetcher)
+		router := gin.InitRouter(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher, rtaFetcher, printerSubscriptionFetcher)
 		if err := router.Run(); err != nil {
 			fmt.Println(err)
 			return
 		}
 	} else {
-		lambda.Start(awslambda.CreateLambdaHandler(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher, rtaFetcher))
+		lambda.Start(awslambda.CreateLambdaHandler(s3FetcherUsEast1, s3FetcherUsWest1, xmlsFetcher, cloudJsonFetcher, heartbeatsFetcher, rtaFetcher, printerSubscriptionFetcher))
 	}
 }

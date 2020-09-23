@@ -17,7 +17,7 @@ func ExtractQueryParams(r *events.APIGatewayProxyRequest) map[string]string {
 }
 
 // ExtractStorageQueryParams is responsible of extracting the query parameters from the
-// API Gateway request and returns a map with those query parameters.
+// API Gateway request and returns a maputil with those query parameters.
 func ExtractStorageQueryParams(r *events.APIGatewayProxyRequest) map[string]string {
 	return map[string]string{
 		"bucket_region": r.QueryStringParameters["bucket_region"],

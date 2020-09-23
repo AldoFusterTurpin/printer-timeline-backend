@@ -1,10 +1,11 @@
 package api
 
 import (
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/db"
 	"net/http"
 
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/datafetcher"
-	myErrors "bitbucket.org/aldoft/printer-timeline-backend/app/internal/errors"
+	. "bitbucket.org/aldoft/printer-timeline-backend/app/internal/queryparams"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 )
 
@@ -15,12 +16,14 @@ func SelectHTTPStatus(err error) int {
 	switch err {
 	case nil:
 		return http.StatusOK
-	case myErrors.QueryStringMissingTimeRangeType, myErrors.QueryStringUnsupportedTimeRangeType, myErrors.QueryStringStartTimeAppears,
-		myErrors.QueryStringMissingEndTime, myErrors.QueryStringEndTimeAppears, myErrors.QueryStringUnsupportedEndTime,
-		myErrors.QueryStringMissingOffsetUnits, myErrors.QueryStringUnsupportedOffsetUnits, myErrors.QueryStringMissingOffsetValue,
-		myErrors.QueryStringUnsupportedOffsetValue, myErrors.QueryStringMissingStartTime, myErrors.QueryStringUnsupportedStartTime,
-		myErrors.QueryStringTimeDifferenceTooBig, myErrors.QueryStringEndTimePreviousThanStartTime, myErrors.QueryStringPnSn:
+	case ErrorQueryStringMissingTimeRangeType, ErrorQueryStringUnsupportedTimeRangeType, ErrorQueryStringStartTimeAppears,
+		ErrorQueryStringMissingEndTime, ErrorQueryStringEndTimeAppears, ErrorQueryStringUnsupportedEndTime,
+		ErrorQueryStringMissingOffsetUnits, ErrorQueryStringUnsupportedOffsetUnits, ErrorQueryStringMissingOffsetValue,
+		ErrorQueryStringUnsupportedOffsetValue, ErrorQueryStringMissingStartTime, ErrorQueryStringUnsupportedStartTime,
+		ErrorQueryStringTimeDifferenceTooBig, ErrorQueryStringEndTimePreviousThanStartTime, ErrorQueryStringPnSn:
 		return http.StatusBadRequest
+	case db.NotFoundErr:
+		return http.StatusNotFound
 	default:
 		return http.StatusInternalServerError
 	}
@@ -28,7 +31,7 @@ func SelectHTTPStatus(err error) int {
 
 // GetData is the responsible of obtaining the data based in the queryParameters.
 // This function is independent of the Framework used to create the web server as its input is just
-// a map containing the http query parameters.
+// a maputil containing the http query parameters.
 // A DataFetcher is injected in order to obtain the data.
 func GetData(queryParameters map[string]string, fetcher datafetcher.DataFetcher) (status int, result *cloudwatchlogs.GetQueryResultsOutput, err error) {
 	result, err = fetcher.FetchData(queryParameters)

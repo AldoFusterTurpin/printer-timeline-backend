@@ -2,7 +2,10 @@ package awslambda_test
 
 import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/awslambda"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/configs"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/datafetcher/mocks"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/db"
+	printerSubscriptionMocks "bitbucket.org/aldoft/printer-timeline-backend/app/internal/db/mocks"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/queryparams"
 	s3Mocks "bitbucket.org/aldoft/printer-timeline-backend/app/internal/storage/mocks"
 	"bytes"
@@ -19,7 +22,8 @@ import (
 	"net/http"
 )
 
-//go:generate mockgen -source=../s3storage/s3.go -destination=../s3storage/mocks/s3.go -package=mocks
+// //go:generate mockgen -source=../s3storage/s3.go -destination=../s3storage/mocks/s3.go -package=mocks
+//go:generate mockgen -source=../db/dynamo.go -destination=../db/mocks/dynamodb.go -package=mocks
 
 const (
 	invalidRegion = "EU_CENTRAL_1"
@@ -90,6 +94,7 @@ var _ = Describe("Handlers test", func() {
 		var mockHeartbeatFetcher *mocks.MockDataFetcher
 		var mockRTAFetcher *mocks.MockDataFetcher
 
+		var mockPrinterSubscriptionFetcher *printerSubscriptionMocks.MockPrinterSubscriptionFetcher
 		var mockS3UsEastFetcher, mockS3UsWestFetcher *s3Mocks.MockS3Fetcher
 		var eventRequest *events.APIGatewayProxyRequest
 
@@ -99,6 +104,7 @@ var _ = Describe("Handlers test", func() {
 		BeforeEach(func() {
 			mockCtrl = gomock.NewController(GinkgoT())
 
+			mockPrinterSubscriptionFetcher = printerSubscriptionMocks.NewMockPrinterSubscriptionFetcher(mockCtrl)
 			mockS3UsEastFetcher = s3Mocks.NewMockS3Fetcher(mockCtrl)
 			mockS3UsWestFetcher = s3Mocks.NewMockS3Fetcher(mockCtrl)
 			mockXMLFetcher = mocks.NewMockDataFetcher(mockCtrl)
@@ -127,9 +133,9 @@ var _ = Describe("Handlers test", func() {
 		})
 
 		It("should call cloudjson fetcher", func() {
-			eventRequest.Path = awslambda.CloudJsonPath
+			eventRequest.Path = configs.CloudJsonPath
 
-			handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher)
+			handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher, mockPrinterSubscriptionFetcher)
 			mockCloudJSONFetcher.EXPECT().FetchData(gomock.Any()).Return(results, nil).MinTimes(1)
 
 			_, _ = handler(context.Background(), eventRequest)
@@ -137,9 +143,9 @@ var _ = Describe("Handlers test", func() {
 		})
 
 		It("should call openXml fetcher", func() {
-			eventRequest.Path = awslambda.OpenXMLPath
+			eventRequest.Path = configs.OpenXMLPath
 
-			handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher)
+			handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher, mockPrinterSubscriptionFetcher)
 			mockXMLFetcher.EXPECT().FetchData(gomock.Any()).Return(results, nil).MinTimes(1)
 
 			_, _ = handler(context.Background(), eventRequest)
@@ -147,9 +153,9 @@ var _ = Describe("Handlers test", func() {
 		})
 
 		It("should call heartbeat fetcher", func() {
-			eventRequest.Path = awslambda.HeartbeatPath
+			eventRequest.Path = configs.HeartbeatPath
 
-			handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher)
+			handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher, mockPrinterSubscriptionFetcher)
 			mockHeartbeatFetcher.EXPECT().FetchData(gomock.Any()).Return(results, nil).MinTimes(1)
 
 			_, _ = handler(context.Background(), eventRequest)
@@ -157,10 +163,28 @@ var _ = Describe("Handlers test", func() {
 		})
 
 		It("should call rta fetcher", func() {
-			eventRequest.Path = awslambda.RTAPath
+			eventRequest.Path = configs.RTAPath
 
-			handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher)
+			handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher, mockPrinterSubscriptionFetcher)
 			mockRTAFetcher.EXPECT().FetchData(gomock.Any()).Return(results, nil).MinTimes(1)
+
+			_, _ = handler(context.Background(), eventRequest)
+
+		})
+
+		It("should call subscription fetcher", func() {
+			eventRequest.Path = configs.SubscriptionsPath
+			handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher, mockPrinterSubscriptionFetcher)
+			mockPrinterSubscriptionFetcher.EXPECT().GetPrinterSubscriptions(gomock.Any(), gomock.Any()).MinTimes(1).Return([]*db.CCPrinterSubscriptionModel{
+				{
+					PrinterID:             "printerID",
+					AccountID:             "accountID",
+					SerialNumber:          "serialNumber",
+					ProductNumber:         "productNumber",
+					ServiceID:             "serviceID",
+					RegistrationTimeEpoch: 0,
+				},
+			}, nil)
 
 			_, _ = handler(context.Background(), eventRequest)
 
@@ -168,7 +192,7 @@ var _ = Describe("Handlers test", func() {
 
 		Context("object tests", func() {
 			BeforeEach(func() {
-				eventRequest.Path = awslambda.StorageObjectPath
+				eventRequest.Path = configs.StorageObjectPath
 
 				eventRequest.QueryStringParameters["bucket_name"] = bucketName
 				eventRequest.QueryStringParameters["object_key"] = objectName
@@ -177,7 +201,7 @@ var _ = Describe("Handlers test", func() {
 			It("should call object fetcher of east1 region", func() {
 				eventRequest.QueryStringParameters["bucket_region"] = *aws.String(queryparams.UsEast1S3Region)
 
-				handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher)
+				handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher, mockPrinterSubscriptionFetcher)
 				mockS3UsEastFetcher.EXPECT().GetObject(gomock.Any()).Return(objectResult, nil).MinTimes(1)
 
 				_, _ = handler(context.Background(), eventRequest)
@@ -186,7 +210,7 @@ var _ = Describe("Handlers test", func() {
 			It("should call object fetcher of west1 region", func() {
 				eventRequest.QueryStringParameters["bucket_region"] = *aws.String(queryparams.UsWest1S3Region)
 
-				handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher)
+				handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher, mockPrinterSubscriptionFetcher)
 				mockS3UsWestFetcher.EXPECT().GetObject(gomock.Any()).Return(objectResult, nil).MinTimes(1)
 
 				_, _ = handler(context.Background(), eventRequest)
@@ -195,7 +219,7 @@ var _ = Describe("Handlers test", func() {
 			It("should not call object fetchers for an invalid region", func() {
 				eventRequest.QueryStringParameters["bucket_region"] = *aws.String(invalidRegion)
 
-				handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher)
+				handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher, mockPrinterSubscriptionFetcher)
 
 				resp, _ := handler(context.Background(), eventRequest)
 
