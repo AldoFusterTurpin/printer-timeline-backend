@@ -12,12 +12,20 @@ import (
 )
 
 const (
-	CloudJsonPath     = "api/cloud_json"
-	OpenXMLPath       = "api/open_xml"
-	HeartbeatPath     = "api/heartbeat"
-	RTAPath           = "api/rta"
-	StorageObjectPath = "api/object"
-	SubscriptionsPath = "api/subscriptions"
+	EnvMaxTimeDiffMinutes   = "MAX_TIME_DIFF_IN_MINUTES"
+	Development             = "DEVELOPMENT"
+	AwsMainRegion           = "AWS_MAIN_REGION"
+	AwsBlackseaBucketRegion = "AWS_BLACKSEA_BUCKET_REGION"
+	DefaultTimeDiffMinutes  = 60
+	MaxTimeDiffMinutes      = 2880
+
+	InfraStructurePath = "/cc/V01/api/"
+	CloudJsonPath      = InfraStructurePath + "cloud-json"
+	OpenXMLPath        = InfraStructurePath + "open-xml"
+	HeartbeatPath      = InfraStructurePath + "heartbeat"
+	RTAPath            = InfraStructurePath + "rta"
+	StorageObjectPath  = InfraStructurePath + "object"
+	SubscriptionsPath  = InfraStructurePath + "subscriptions"
 
 	ProductNumberQueryParam = "pn"
 	SerialNumberQueryParam  = "sn"
@@ -26,6 +34,10 @@ const (
 	OffsetValueQueryParam   = "offset_value"
 	StartTimeQueryParam     = "start_time"
 	EndTimeQueryParam       = "end_time"
+
+	BucketRegionQueryParam = "bucket_region"
+	BucketNameQueryParam   = "bucket_name"
+	ObjectKeyQueryParam    = "object_key"
 )
 
 var (
@@ -39,20 +51,19 @@ func GetMaxTimeDiffInMinutes() int {
 }
 
 func setMaxTimeDiffInMinutes() int {
-	stringDiff, ok := os.LookupEnv("MAX_TIME_DIFF_IN_MINUTES")
+
+	stringDiff, ok := os.LookupEnv(EnvMaxTimeDiffMinutes)
 	if !ok {
-		return 60
+		return DefaultTimeDiffMinutes
 	}
 
 	intDiff, err := strconv.Atoi(stringDiff)
 	if err != nil {
-		return 60
+		return DefaultTimeDiffMinutes
 	}
 
-	// the maximum time difference allowed for queries.
-	twoDaysInMinutes := 2880
-	if intDiff > twoDaysInMinutes {
-		return twoDaysInMinutes
+	if intDiff > MaxTimeDiffMinutes {
+		return MaxTimeDiffMinutes
 	}
 
 	return intDiff
@@ -63,10 +74,11 @@ func Init() {
 	maxTimeDiffInMinutes = setMaxTimeDiffInMinutes()
 }
 
-// IsDevelopment returns true if we are in deveolpment mode based in environment variables.
+// IsDevelopment returns true if we are in development mode based in environment variables.
 // Otherwise returns false.
 func IsDevelopment() bool {
-	dev, ok := os.LookupEnv("DEVELOPMENT")
+
+	dev, ok := os.LookupEnv(Development)
 	if ok && strings.EqualFold(dev, "true") {
 		return true
 	}
@@ -76,12 +88,10 @@ func IsDevelopment() bool {
 // CreateAWSSession creates the corresponding sessions based on environment variables.
 // It also returns an error, if any.
 func CreateAWSSession() (sess1 *session.Session, sess2 *session.Session, err error) {
-	envVarName := "MAIN_AWS_REGION"
-	envVarName2 := "AWS_REGION_BLACK_SEA_BUCKET"
 
-	awsRegion1, ok := os.LookupEnv(envVarName)
+	awsRegion1, ok := os.LookupEnv(AwsMainRegion)
 	if !ok {
-		return nil, nil, errors.New("could not load " + envVarName + " environment variable")
+		return nil, nil, errors.New("could not load " + AwsMainRegion + " environment variable")
 	}
 
 	sess1, err = session.NewSession(&aws.Config{
@@ -91,9 +101,9 @@ func CreateAWSSession() (sess1 *session.Session, sess2 *session.Session, err err
 		return nil, nil, err
 	}
 
-	awsRegion2, ok := os.LookupEnv(envVarName2)
+	awsRegion2, ok := os.LookupEnv(AwsBlackseaBucketRegion)
 	if !ok {
-		return nil, nil, errors.New("could not load " + envVarName + " environment variable")
+		return nil, nil, errors.New("could not load " + AwsMainRegion + " environment variable")
 	}
 
 	sess2, err = session.NewSession(&aws.Config{

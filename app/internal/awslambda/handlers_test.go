@@ -194,12 +194,12 @@ var _ = Describe("Handlers test", func() {
 			BeforeEach(func() {
 				eventRequest.Path = configs.StorageObjectPath
 
-				eventRequest.QueryStringParameters["bucket_name"] = bucketName
-				eventRequest.QueryStringParameters["object_key"] = objectName
+				eventRequest.QueryStringParameters[configs.BucketNameQueryParam] = bucketName
+				eventRequest.QueryStringParameters[configs.ObjectKeyQueryParam] = objectName
 			})
 
 			It("should call object fetcher of east1 region", func() {
-				eventRequest.QueryStringParameters["bucket_region"] = *aws.String(queryparams.UsEast1S3Region)
+				eventRequest.QueryStringParameters[configs.BucketRegionQueryParam] = *aws.String(queryparams.UsEast1S3Region)
 
 				handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher, mockPrinterSubscriptionFetcher)
 				mockS3UsEastFetcher.EXPECT().GetObject(gomock.Any()).Return(objectResult, nil).MinTimes(1)
@@ -208,7 +208,7 @@ var _ = Describe("Handlers test", func() {
 			})
 
 			It("should call object fetcher of west1 region", func() {
-				eventRequest.QueryStringParameters["bucket_region"] = *aws.String(queryparams.UsWest1S3Region)
+				eventRequest.QueryStringParameters[configs.BucketRegionQueryParam] = *aws.String(queryparams.UsWest1S3Region)
 
 				handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher, mockPrinterSubscriptionFetcher)
 				mockS3UsWestFetcher.EXPECT().GetObject(gomock.Any()).Return(objectResult, nil).MinTimes(1)
@@ -217,7 +217,7 @@ var _ = Describe("Handlers test", func() {
 			})
 
 			It("should not call object fetchers for an invalid region", func() {
-				eventRequest.QueryStringParameters["bucket_region"] = *aws.String(invalidRegion)
+				eventRequest.QueryStringParameters[configs.BucketRegionQueryParam] = *aws.String(invalidRegion)
 
 				handler := awslambda.CreateLambdaHandler(mockS3UsEastFetcher, mockS3UsWestFetcher, mockXMLFetcher, mockCloudJSONFetcher, mockHeartbeatFetcher, mockRTAFetcher, mockPrinterSubscriptionFetcher)
 

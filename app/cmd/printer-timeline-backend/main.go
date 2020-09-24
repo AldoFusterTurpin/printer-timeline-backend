@@ -35,14 +35,12 @@ func main() {
 
 	sess1, sess2, err := initConfig.CreateAWSSession()
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 
 	svc, err := createCloudWatch(sess1)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 
 	queryExecutor := createQueryExecutor(svc)
@@ -57,7 +55,7 @@ func main() {
 
 	printerSubscriptionFetcher, err := db.NewCCPrinterSubscriptionCollectionWithSession(sess1)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	dev := initConfig.IsDevelopment()

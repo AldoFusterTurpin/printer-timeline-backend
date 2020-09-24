@@ -88,7 +88,7 @@ func StorageHandler(s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage
 
 func SubscriptionHandler(subscriptionFetcher db.PrinterSubscriptionFetcher) LambdaHandler {
 	return func(ctx context.Context, request *events.APIGatewayProxyRequest) (response *events.APIGatewayProxyResponse, err error) {
-		queryParams := ExtractStorageQueryParams(request)
+		queryParams := ExtractPrinterQueryParams(request)
 
 		status, result, err := api.GetPrinterSubscriptions(queryParams, subscriptionFetcher)
 		if err != nil {

@@ -16,8 +16,8 @@ import (
 // and returns a maputil with those query parameters.
 func ExtractGinPrinterQueryParams(c *gin.Context) map[string]string {
 	return map[string]string{
-		"pn": c.Query(configs.ProductNumberQueryParam),
-		"sn": c.Query(configs.SerialNumberQueryParam),
+		configs.ProductNumberQueryParam: c.Query(configs.ProductNumberQueryParam),
+		configs.SerialNumberQueryParam:  c.Query(configs.SerialNumberQueryParam),
 	}
 }
 
@@ -47,9 +47,9 @@ func ExtractGinQueryParams(c *gin.Context) map[string]string {
 // and returns a maputil with those query parameters. It is used in the GetStoredObject endpoint.
 func ExtractGinStorageQueryParams(c *gin.Context) map[string]string {
 	return map[string]string{
-		"bucket_region": c.Query("bucket_region"),
-		"bucket_name":   c.Query("bucket_name"),
-		"object_key":    c.Query("object_key"),
+		configs.BucketRegionQueryParam: c.Query(configs.BucketRegionQueryParam),
+		configs.BucketNameQueryParam:   c.Query(configs.BucketNameQueryParam),
+		configs.ObjectKeyQueryParam:    c.Query(configs.ObjectKeyQueryParam),
 	}
 }
 
