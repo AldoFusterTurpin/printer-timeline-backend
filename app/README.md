@@ -15,6 +15,8 @@ You can follow a top-down approach to better understand the code. Also take a lo
 This project is a Go API that let's you retrieve in chronological order different data elements of the Cloud Connector (OpenXMls, CloudJsons, etc.) specifying a time range and a pn (Product Number) and sn(Serial number), if you don't specify them you will obtain all the pn's and sn's in that time range. It also has an endpoint to retrieve AWS S3 objects by bucket name and object key.
 
 ### How do I get set up? ###
+You can use the Makefile.
+
 The file dev.env contains the environment variables. 
 
 Set env variable DEVELOPMENT=true in file dev.env when whant to use development mode (it will create a local server at http://0.0.0.0:8080).
