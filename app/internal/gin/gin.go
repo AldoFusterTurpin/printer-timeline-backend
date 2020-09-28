@@ -1,6 +1,9 @@
 package gin
 
 import (
+	"net/http"
+	"time"
+
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/api"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/configs"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/datafetcher"
@@ -9,7 +12,6 @@ import (
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/storage"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 // ExtractGinPrinterQueryParams is responsible of extracting the query parameters from the gin context
@@ -107,7 +109,16 @@ func InitRouter(s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage.S3F
 	printerSubscriptionFetcher db.PrinterSubscriptionFetcher) *gin.Engine {
 
 	router := gin.Default()
-	router.Use(cors.Default())
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"OPTIONS", "GET", "PUT", "PATCH"},
+		AllowHeaders:     []string{"access-control-allow-origin, access-control-allow-headers, Content-Type, x-api-key"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowWildcard:    true,
+		MaxAge:           50 * time.Hour,
+	}))
 
 	router.GET(configs.StorageObjectPath, StorageHandler(s3FetcherUsEast1, s3FetcherUsWest1))
 	router.GET(configs.OpenXMLPath, Handler(xmlsFetcher))
