@@ -1,12 +1,13 @@
 package awslambda
 
 import (
-	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/configs"
-	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/db"
-	. "bitbucket.org/aldoft/printer-timeline-backend/app/internal/queryparams"
 	"context"
 	"encoding/json"
 	"net/http"
+
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/configs"
+	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/db"
+	. "bitbucket.org/aldoft/printer-timeline-backend/app/internal/queryparams"
 
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/api"
 	"bitbucket.org/aldoft/printer-timeline-backend/app/internal/datafetcher"
@@ -77,12 +78,7 @@ func StorageHandler(s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage
 			return newLambdaError(status, err)
 		}
 
-		jsonResp, err := json.Marshal(result)
-		if err != nil {
-			return newLambdaError(http.StatusInternalServerError, err)
-		}
-
-		return newLambdaOkResponse(jsonResp)
+		return newLambdaOkResponse(result)
 	}
 }
 

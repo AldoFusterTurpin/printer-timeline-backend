@@ -5,11 +5,11 @@ import (
 )
 
 const (
-	NotFoundErr       = ConstError("element not found in dynamodb")
+	NotFoundErr       = ConstError("element not found in database")
 	ConditionalPutErr = ConstError("ConstError trying to add duplicated item")
 	ConditionalDelErr = ConstError("ConstError deleting Item. It not exist")
 
-	ExpressionBuilderErr = ConstError("element not found in dynamodb")
+	ExpressionBuilderErr = ConstError("element not found in database")
 	MarshallErr          = ConstError("ConstError marshalling data")
 	UnmarshallErr        = ConstError("ConstError unmarshalling data")
 )

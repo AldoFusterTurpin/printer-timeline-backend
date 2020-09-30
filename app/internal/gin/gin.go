@@ -66,8 +66,9 @@ func Handler(dataFetcher datafetcher.DataFetcher) gin.HandlerFunc {
 
 		if err != nil {
 			c.JSON(status, err.Error())
+		} else {
+			c.JSON(status, result)
 		}
-		c.JSON(status, result)
 	}
 }
 
@@ -81,10 +82,13 @@ func StorageHandler(s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage
 
 		status, result, err := api.GetStoredObject(queryParams, s3FetcherUsEast1, s3FetcherUsWest1)
 
+		mimeType := "text"
+
 		if err != nil {
-			c.JSON(status, err.Error())
+			c.Data(status, mimeType, []byte(err.Error()))
+		} else {
+			c.Data(status, mimeType, result)
 		}
-		c.JSON(status, result)
 	}
 }
 
@@ -96,8 +100,9 @@ func SubscriptionHandler(fetcher db.PrinterSubscriptionFetcher) gin.HandlerFunc 
 
 		if err != nil {
 			c.JSON(status, err.Error())
+		} else {
+			c.JSON(http.StatusOK, result)
 		}
-		c.JSON(http.StatusOK, result)
 	}
 }
 

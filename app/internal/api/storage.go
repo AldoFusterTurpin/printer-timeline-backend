@@ -9,7 +9,7 @@ import (
 // This function is independent of the Framework used to create the web server as its input is just
 // a maputil containing the http query parameters.
 // A s3Fetcher is injected in order to obtain the stored objects.
-func GetStoredObject(queryParameters map[string]string, s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage.S3Fetcher) (status int, result string, err error) {
+func GetStoredObject(queryParameters map[string]string, s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage.S3Fetcher) (status int, result []byte, err error) {
 	bucketRegion, bucketName, objectKey, err := queryparams.ExtractS3Info(queryParameters)
 	if err != nil {
 		status = SelectHTTPStatus(err)
@@ -18,11 +18,10 @@ func GetStoredObject(queryParameters map[string]string, s3FetcherUsEast1 storage
 
 	s3FetcherToUSe := selectS3Fetcher(bucketRegion, s3FetcherUsEast1, s3FetcherUsWest1)
 
-	var bytesResult []byte
-	bytesResult, err = storage.GetS3Data(*s3FetcherToUSe, bucketName, objectKey)
+	result, err = storage.GetS3Data(*s3FetcherToUSe, bucketName, objectKey)
 
 	status = SelectHTTPStatus(err)
-	return status, string(bytesResult), err
+	return status, result, err
 }
 
 func selectS3Fetcher(bucketRegion string, s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage.S3Fetcher) *storage.S3Fetcher {
