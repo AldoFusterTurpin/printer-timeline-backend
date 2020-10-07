@@ -8,9 +8,14 @@ import (
 )
 
 func newLambdaOkResponse(response []byte) (*events.APIGatewayProxyResponse, error) {
+	headers := map[string]string{
+		"Content-type": "text",
+	}
+
 	return &events.APIGatewayProxyResponse{
 		StatusCode: http.StatusOK,
 		Body:       fmt.Sprintf("%s", response),
+		Headers:    headers,
 	}, nil
 }
 
