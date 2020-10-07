@@ -83,7 +83,7 @@ func StorageHandler(s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage
 		}
 
 		headers := map[string]string{
-			"Content-type": "text",
+			"Content-type": "text/plain",
 		}
 
 		return newLambdaOkResponse(headers, result)
