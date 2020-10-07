@@ -64,7 +64,11 @@ func GenericHandler(fetcher datafetcher.DataFetcher) LambdaHandler {
 			return newLambdaError(http.StatusInternalServerError, err)
 		}
 
-		return newLambdaOkResponse(jsonResp)
+		headers := map[string]string{
+			"Content-type": "application/json",
+		}
+
+		return newLambdaOkResponse(headers, jsonResp)
 	}
 }
 
@@ -78,7 +82,11 @@ func StorageHandler(s3FetcherUsEast1 storage.S3Fetcher, s3FetcherUsWest1 storage
 			return newLambdaError(status, err)
 		}
 
-		return newLambdaOkResponse(result)
+		headers := map[string]string{
+			"Content-type": "text",
+		}
+
+		return newLambdaOkResponse(headers, result)
 	}
 }
 
@@ -96,6 +104,10 @@ func SubscriptionHandler(subscriptionFetcher db.PrinterSubscriptionFetcher) Lamb
 			return newLambdaError(http.StatusInternalServerError, err)
 		}
 
-		return newLambdaOkResponse(jsonResp)
+		headers := map[string]string{
+			"Content-type": "application/json",
+		}
+
+		return newLambdaOkResponse(headers, jsonResp)
 	}
 }

@@ -7,11 +7,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-func newLambdaOkResponse(response []byte) (*events.APIGatewayProxyResponse, error) {
-	headers := map[string]string{
-		"Content-type": "text",
-	}
-
+func newLambdaOkResponse(headers map[string]string, response []byte) (*events.APIGatewayProxyResponse, error) {
 	return &events.APIGatewayProxyResponse{
 		StatusCode: http.StatusOK,
 		Body:       fmt.Sprintf("%s", response),
