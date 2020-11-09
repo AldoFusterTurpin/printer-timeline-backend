@@ -1,13 +1,9 @@
 # README #
-You can find samples of the REQUESTS in the Postman file: printer-timeline-backend.postman_collection.json at the root level of the project. 
-
 Time type can be relative or absolute. You can find more information on the request parameters in app/internal/queryparams/query_params_test.go 
 
 package queryparams extracts the query parameters common to more than one endpoint.
 
 In app/internal/api/api.go you will find the different endpoints and the corresponding handlers.
-
-You can follow a top-down approach to better understand the code. Also take a look at the test files.
 
 ### What is this repository for? ###
 
@@ -15,7 +11,7 @@ You can follow a top-down approach to better understand the code. Also take a lo
 This project is a Go API that let's you retrieve in chronological order different data elements of the Cloud Connector (OpenXMls, CloudJsons, etc.) specifying a time range and a pn (Product Number) and sn(Serial number), if you don't specify them you will obtain all the pn's and sn's in that time range. It also has an endpoint to retrieve AWS S3 objects by bucket name and object key.
 
 ### How do I get set up? ###
-You can use the Makefile.
+You can (and should) use the Makefile👨‍💻
 
 The file dev.env contains the environment variables. 
 
@@ -47,19 +43,14 @@ $ cd app/cmd/printer-timeline-backend && go run main.go
 
 The API is using AWS Services under the hood. It is using the AWS SDK for the Go programming language [AWS SDK for Go](https://aws.amazon.com/sdk-for-go/).
 
-AWS uses different regions and depending where the AWS Services are. You will need to change the environment variables to match the AWS Service's regions (the file dev.env already contains the correct ones). Check the AWS console (web) to see the regions of your services.
+AWS uses different regions and depending where the AWS Services are you will need to change the environment variables to match the AWS Service's regions (the file dev.env already contains the correct ones). Check the AWS console (web) to see the regions of your services.
 
 The API uses AWS Cloudwatch Insights: AWS CloudWatch is in the region 'us-east-1'. 
-The Cloud Connector bucket 'cloudconnector-core-production' is in us-east-1 and the bucket 'cloudconnector-to-blacksea-production' is in us-west-1. 
 
-This API is intended to work with the account 'latex-dev' so you will need an IAM user and the corresponding AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for that account.
-The setup instructions for the credentials and the AWS CLI are here: [AWS Credentials Configuration](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
-
-For more info about AWS accounts contact the Cloud Connector team.
 
 * How to run tests
 
-cd app/internal  && go test ./... -cover;
+cd app/internal  && go test ./... -cover; 
 
 * Deployment instructions
 
@@ -88,6 +79,4 @@ $ aws lambda create-function --region us-east-1 --function-name printer-timeline
 $ aws lambda update-function-code --region us-east-1 --function-name printer-timeline-backend --zip-file fileb://lambda.zip --publish
 
 ### Who do I talk to? ###
-
-* Cloud Connector team
 * Aldo Fuster Turpin
